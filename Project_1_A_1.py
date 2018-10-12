@@ -6,7 +6,6 @@ import tensorflow as tf
 import numpy as np
 import pylab as plt
 
-
 # scale data
 def scale(X, X_min, X_max):
     return (X - X_min)/(X_max-X_min)
@@ -17,9 +16,8 @@ NUM_HIDDEN = 10 # 10 neurons in hidden layer
 
 learning_rate = 0.01 # alpha
 beta = 10**-6 # weight decay parameter
-epochs = 1000
+epochs = 1001
 batch_size = 32 # 32 samples per training batch
-num_neurons = 10 # hidden neruons
 seed = 10
 np.random.seed(seed)
 
@@ -71,9 +69,8 @@ accuracy = tf.reduce_mean(correct_prediction)
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    train_acc = []
+    train_acc = []    
     idx = np.arange(n)
-
     for i in range(epochs):
         np.random.shuffle(idx) # shuffle indeces
         trainX, trainY = trainX[idx], trainY[idx] # shuffle data with new indeces
@@ -82,15 +79,9 @@ with tf.Session() as sess:
         for start, end in zip(range(0, n, batch_size), range(batch_size, n, batch_size)):
             train_op.run(feed_dict={x: trainX[start:end], y_: trainY[start:end]})
             
-        train_acc.append(accuracy.eval(feed_dict={x: trainX, y_: trainY})) # store acurracy for every epoch
-            
+        train_acc.append(accuracy.eval(feed_dict={x: trainX, y_: trainY})) # store acurracy for every epoch        
         if i % 100 == 0:
             print('iter %d: accuracy %g'%(i, train_acc[i]))
-
-    # Print final values
-    #V_, c_, W_, b_ = sess.run([softmax_weights, softmax_biases, hidden_weights, hidden_biases])
-    #print('V: {}, c: {}'.format(V_[:,0:10], c_[:10]))
-    #print('W: {}, b: {}'.format(W_, b_))
 
 # plot learning curves
 plt.figure(1)
@@ -98,4 +89,5 @@ plt.plot(range(epochs), train_acc)
 plt.xlabel(str(epochs) + ' iterations')
 plt.ylabel('Train accuracy')
 plt.show()
+
 
