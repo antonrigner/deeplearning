@@ -6,7 +6,7 @@ Created on Sun Oct 14 16:50:59 2018
 """
 
 #
-# Project 1, Part B, question 2
+# Project 1, Part B, question 3
 #
 
 import tensorflow as tf
@@ -20,12 +20,12 @@ NUM_FEATURES = 8
 
 epochs = 500
 batch_size = 32
-num_neuron = 30
+learning_rate = 10**-7
 no_folds = 5
 
 seed = 10
 np.random.seed(seed)
-beta = 0
+beta = 10**-6
 
 def getData():
     print('Fetching data...')
@@ -48,8 +48,8 @@ def getData():
 #    print(str(trainX.shape[0]))
 #    print(str(testX.shape[0]))
 #    # experiment with small datasets
-    trainX = trainX[:1000]
-    trainY = trainY[:1000]
+#    trainX = trainX[:200]
+#    trainY = trainY[:200]
     
     # Divide data into validation and testing data
     n = trainX.shape[0]
@@ -64,7 +64,7 @@ def getData():
     print('Number of data points in trainX: ' + str(trainX.shape[0]))
     return trainX, trainY, testX, testY
 
-def runModel(learning_rate, train_X, train_Y, test_X, test_Y):
+def runModel(num_neuron, train_X, train_Y, test_X, test_Y):
 #    trainX, trainY, testX, testY = getData()
     trainX, trainY, testX, testY = train_X, train_Y, test_X, test_Y
     
@@ -130,6 +130,8 @@ def runModel(learning_rate, train_X, train_Y, test_X, test_Y):
                     
             validation_err = error.eval(feed_dict={x: x_validation, y_:y_validation}) # errors after training
             cross_val_error.append(validation_err)
+            pred = sess.run(y, feed_dict={x: testX[:50]}) # final test predictions
+
             
 #         plot learning curves
         plt.figure(1)
@@ -138,44 +140,55 @@ def runModel(learning_rate, train_X, train_Y, test_X, test_Y):
         plt.xlabel(str(epochs) + ' iterations')
         plt.ylabel('Train Error')
         plt.show()
+        
+        plt.figure(2)
+        targets = np.asarray(testY[:50])
+        fig = plt.figure(figsize=(10,5))
+        ax1 = fig.add_subplot(111)
+        ax1.set_title('Targets and preditions')
+        ax1.scatter(range(50), pred, color='blue', marker='.', label='Targets')
+        ax1.scatter(range(50), targets, color='red', marker='x', label='Predictions')
+        ax1.set_xlabel('Test number')
+        ax1.set_ylabel('Housing price')
+        
     mean_cve = np.mean(cross_val_error) # average cross validation error over the 5 folds
-    print('The cross validation error for model with learning parameter ' + str(learning_rate) + ' : ' + str(mean_cve))
+    print('The cross validation error for model with ' + str(num_neuron) + ' hidden neurons: ' + str(mean_cve))
     return mean_cve, test_err
 
 def main():
-    learningRateSS = [0.5*10**-6, 10**-6, 10**-7, 0.5*10**-8, 10**-9, 10**-10]
+    neuronSS = [20, 40, 60, 80, 100]
     cross_val_errors = []
     test_err = []
     trainX, trainY, testX, testY = getData()
     lowest_error = sys.maxsize # Max value of integers, to ensure first model is always stored as lowest
-
-    for learning_rate in learningRateSS:
-        cross_val_error, model_err = runModel(learning_rate, trainX, trainY, testX, testY)
+    
+    for num_neurons in neuronSS:
+        cross_val_error, model_err = runModel(num_neurons, trainX, trainY, testX, testY)
         cross_val_errors.append(cross_val_error)
-        if(cross_val_error <= lowest_error):
+        if(cross_val_error <= lowest_error): 
             print('Diff to new lowest error: ' + str(cross_val_error - lowest_error))
             test_err = model_err # store test error for best model for plotting
             lowest_error = cross_val_error
-            print('NEW LOWEST CVE: ' + str(lowest_error))
+            print('NEW LOWEST CVE: ' + str(lowest_error) + 'for model with ' + str(num_neurons) + ' neurons.')
             print('RMSE: ' + str(math.sqrt(lowest_error)))
     # plot test errors for best model
-    plt.figure(1)
+    plt.figure(3)
     plt.plot(range(epochs), test_err)
     plt.xlabel(str(epochs) + ' iterations')
     plt.ylabel('Test Errors for best model')
     plt.show()
+    print('----- FINAL TEST ERROR: ' + str(test_err[epochs-1]) + ' -----')
+    print('----- FINAL RMSE: ' + str(math.sqrt(test_err[epochs-1])) + ' -----')
     
-    print(learningRateSS[np.argmin(cross_val_errors)])
-    fig = plt.figure(2)
-    ax1 = fig.add_subplot(211)
+    fig2 = plt.figure(4)
+    ax1 = fig2.add_subplot(211)
     ax1.set_title('Mean cross validation error')
-    ax1.scatter([1,2,3,4,5, 6], cross_val_errors)
-    ax1.xaxis.set_ticks([1,2,3,4,5,6])
-    ax1.xaxis.set_ticklabels(learningRateSS)
-    ax1.set_xlabel('Learning rate')
+    ax1.scatter([1,2,3,4,5], cross_val_errors)
+    ax1.xaxis.set_ticks([1,2,3,4,5])
+    ax1.xaxis.set_ticklabels(neuronSS)
+    ax1.set_xlabel('Number of neurons in hidden ReLU layer')
     ax1.set_ylabel('Cross validation error')
-    fig.show()
-    
+
 if __name__ == '__main__':
     start_time = time.time()
     main()

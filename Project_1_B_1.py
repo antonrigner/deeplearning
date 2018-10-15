@@ -118,18 +118,19 @@ def runModel():
     plt.show()
     
     # plot predicted values and targets
+    targets = np.asarray(testY[:50])
     fig = plt.figure(figsize=(10,5))
     ax1 = fig.add_subplot(111)
     ax1.set_title('Targets and preditions')
     ax1.scatter(range(50), pred, color='blue', marker='.', label='Targets')
-    targets = np.asarray(testY[:50])
     ax1.scatter(range(50), targets, color='red', marker='x', label='Predictions')
     ax1.set_xlabel('Test number')
     ax1.set_ylabel('Housing price')
+    
     return train_err, pred
 
 def main():
-    train_err, pred = runModel()
+    runModel()
 
 if __name__ == '__main__':
     main()
