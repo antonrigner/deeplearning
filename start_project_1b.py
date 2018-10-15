@@ -9,7 +9,7 @@ import pylab as plt
 
 NUM_FEATURES = 8
 
-learning_rate = 0.01
+learning_rate = 0.00001
 epochs = 500
 batch_size = 32
 num_neuron = 30
@@ -59,7 +59,7 @@ with tf.Session() as sess:
 		train_err.append(err)
 
 		if i % 100 == 0:
-			print('iter %d: test error %g'%(i, train_err[i]))
+			print('iter %d: train error %g'%(i, train_err[i]))
 
 # plot learning curves
 plt.figure(1)
