@@ -13,6 +13,11 @@ import tensorflow as tf
 import numpy as np
 import pylab as plt
 import timeit
+import os
+
+if not os.path.isdir('figuresA3'):
+    print('Creating the figures folder')
+    os.makedirs('figuresA3')
 
 # scale data
 def scale(X, X_min, X_max):
@@ -118,11 +123,11 @@ def runModel(hidden_neurons, batch_size):
                 print('iter %d: accuracy %g'%(i, train_acc[i]))
                 
         
-        returnData = np.zeros((3,epochs))
-        returnData[0, :] = train_err
-        returnData[1, :] = test_acc
-        returnData[2, :] = epoch_trainingTime # training time per 1 epoch
-    return returnData
+        modelData = np.zeros((3,epochs))
+        modelData[0, :] = train_err
+        modelData[1, :] = test_acc
+        modelData[2, :] = epoch_trainingTime # training time per 1 epoch
+    return modelData
 
     
 def main():
@@ -131,6 +136,17 @@ def main():
     test_acc = []
     hidden_neurons_SS = [5, 10 ,15, 20, 25] # hidden neurons search space
     
+    fig1 = plt.figure(2, figsize=(10,5))
+    ax1 = fig1.add_subplot(111)
+    ax1.set_title('Training Errors for different nbr of hidden neruons')# + str(batchsize))
+    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
+    ax1.set_ylabel('Train error')
+    
+    fig2 = plt.figure(3, figsize=(10,5))
+    ax2 = fig2.add_subplot(111)
+    ax2.set_title('Test Accurracy for different nbr of hidden neruons')
+    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
+    ax2.set_ylabel('Test accuracy')
     # run the 5 models, store the validation data (training error, testing accurracy and avg time for training)
     for nbrHidden in hidden_neurons_SS:
         modeldata = runModel(nbrHidden, 32)
@@ -138,28 +154,28 @@ def main():
         test_acc = modeldata[1]
         avgtime.append(np.mean(modeldata[2])) # average out how much time to train ONE epoch
         
-        print('Final training error: ' + str(train_err[epochs-1]))
-        plt.figure(2)
-        plt.title('Training Errors, hidden neurons: ' + str(nbrHidden))
-        plt.plot(range(epochs), train_err)
-        plt.xlabel(str(epochs) + ' iterations/epochs')
-        plt.ylabel('Train error')
-        plt.show()
+#        print('Final training error: ' + str(train_err[epochs-1]))
+        ax1.plot(range(epochs), train_err)
         
-        print('Final Test accurracy: ' + str(test_acc[epochs-1]))
-        plt.figure(3)
-        plt.title('Test Accurracy for hidden neurons: ' + str(nbrHidden))
-        plt.plot(range(epochs), test_acc)
-        plt.xlabel(str(epochs) + ' iterations/epochs')
-        plt.ylabel('Test accuracy')
-        plt.show()
+#        print('Final Test accurracy: ' + str(test_acc[epochs-1]))
+        ax2.plot(range(epochs), test_acc)
         
+        
+    fig1.legend(['5 neurons', '10 neurons', '15 neurons', '20 neurons', '25 neurons'])
+    fig1.savefig('./figuresA3/PartA_3_TrainError.png')
+    fig1.show()
+    
+    fig2.legend(['5 neurons', '10 neurons', '15 neurons', '20 neurons', '25 neurons'])
+    fig2.savefig('./figuresA3/PartA_3_TestAcc.png')
+    fig2.show()
+    
     plt.figure(1)
     plt.title('Average time for one epoch for different numbers of hidden neurons')
     plt.xticks(hidden_neurons_SS)
     plt.scatter(hidden_neurons_SS, avgtime)
     plt.xlabel('Nbr of hidden neurons')
     plt.ylabel('Average epoch training time')
+    plt.savefig('./figuresA3/PartA_3_TrainTime.png')
     plt.show()
 
 if __name__ == '__main__':
