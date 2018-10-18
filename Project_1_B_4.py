@@ -28,7 +28,7 @@ epochs = 1000
 batch_size = 32
 learning_rate = 10**-9
 no_folds = 5
-prob = 0.9 # Keep probability for dropout
+prob = 1.0 # Keep probability for dropout
 
 seed = 10
 np.random.seed(seed)
@@ -121,7 +121,7 @@ def runModel(train_X, train_Y, test_X, test_Y):
         
         y = tf.matmul(h3_dropout, output_weights) + output_bias # output layer
         
-        regularizers = tf.nn.l2_loss(hidden_weights1) + tf.nn.l2_loss(hidden_weights2) + tf.nn.l2_loss(hidden_weights3) + tf.nn.l2_loss(output_weights)
+        regularizers = tf.nn.l2_loss(hidden_weights1) + tf.nn.l2_loss(hidden_weights2) + tf.nn.l2_loss(output_weights)# + tf.nn.l2_loss(hidden_weights3) 
     
         loss = tf.reduce_mean(tf.square(y_ - y) + beta * regularizers) # reguralized loss
         
@@ -179,8 +179,8 @@ def main():
     plt.figure(1)
     plt.plot(range(epochs), test_err)
     plt.xlabel(str(epochs) + ' iterations')
-    plt.ylabel('Test Errors')
-    plt.savefig('./figuresB4/PartB_4_TestErr.png')
+    plt.ylabel('Test Errors 5 layer network')
+    plt.savefig('./figuresB4/PartB_4b_no_dropout_TestErr.png')
     plt.show()
     print('----- FINAL TEST ERROR: ' + str(test_err[epochs-1]) + ' -----')
     print('----- FINAL TEST RMSE: ' + str(math.sqrt(test_err[epochs-1])) + ' -----')

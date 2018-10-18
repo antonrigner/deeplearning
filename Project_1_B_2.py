@@ -30,7 +30,7 @@ no_folds = 5
 
 seed = 10
 np.random.seed(seed)
-beta = 0
+#beta = 0
 
 def getData():
     print('Fetching data...')
@@ -53,8 +53,8 @@ def getData():
 #    print(str(trainX.shape[0]))
 #    print(str(testX.shape[0]))
 #    # experiment with small datasets
-    trainX = trainX[:1000]
-    trainY = trainY[:1000]
+#    trainX = trainX[:1000]
+#    trainY = trainY[:1000]
     
     # Divide data into validation and testing data
     n = trainX.shape[0]

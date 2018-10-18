@@ -45,8 +45,8 @@ def getData():
     trainX = (trainX- np.mean(trainX, axis=0))/ np.std(trainX, axis=0)
     
 #    # experiment with small datasets
-    trainX = trainX[:1000]
-    trainY = trainY[:1000]
+#    trainX = trainX[:1000]
+#    trainY = trainY[:1000]
     
     # Divide data into validation and testing data
     n = trainX.shape[0]

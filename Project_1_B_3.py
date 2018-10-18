@@ -131,7 +131,7 @@ def runModel(num_neuron, train_X, train_Y, test_X, test_Y):
                     
             validation_err = error.eval(feed_dict={x: x_validation, y_:y_validation}) # errors after training
             cross_val_error.append(validation_err)
-#            pred = sess.run(y, feed_dict={x: testX[:50]}) # final test predictions
+#            pred = sess.run(y, feed_dict={x: testX[:50]})  # final test predictions
 
             
 #         plot learning curves

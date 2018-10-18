@@ -1,0 +1,3 @@
+----- FINAL TEST ERROR: 3648733000.0 -----
+----- FINAL RMSE: 60404.74259526316 -----
+--- Total execution time: 2687.775008201599 seconds (44.79625013669332 minutes)---
