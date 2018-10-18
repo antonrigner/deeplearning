@@ -131,7 +131,7 @@ def runModel(num_neuron, train_X, train_Y, test_X, test_Y):
                     
             validation_err = error.eval(feed_dict={x: x_validation, y_:y_validation}) # errors after training
             cross_val_error.append(validation_err)
-            pred = sess.run(y, feed_dict={x: testX[:50]}) # final test predictions
+#            pred = sess.run(y, feed_dict={x: testX[:50]}) # final test predictions
 
             
 #         plot learning curves
@@ -142,15 +142,15 @@ def runModel(num_neuron, train_X, train_Y, test_X, test_Y):
         plt.ylabel('Train Error')
         plt.show()
         
-        plt.figure(2)
-        targets = np.asarray(testY[:50])
-        fig = plt.figure(figsize=(10,5))
-        ax1 = fig.add_subplot(111)
-        ax1.set_title('Targets and preditions')
-        ax1.scatter(range(50), pred, color='blue', marker='.', label='Targets')
-        ax1.scatter(range(50), targets, color='red', marker='x', label='Predictions')
-        ax1.set_xlabel('Test number')
-        ax1.set_ylabel('Housing price')
+#        plt.figure(2)
+#        targets = np.asarray(testY[:50])
+#        fig = plt.figure(figsize=(10,5))
+#        ax1 = fig.add_subplot(111)
+#        ax1.set_title('Targets and preditions')
+#        ax1.scatter(range(50), pred, color='blue', marker='.', label='Targets')
+#        ax1.scatter(range(50), targets, color='red', marker='x', label='Predictions')
+#        ax1.set_xlabel('Test number')
+#        ax1.set_ylabel('Housing price')
         
     mean_cve = np.mean(cross_val_error) # average cross validation error over the 5 folds
     print('The cross validation error for model with ' + str(num_neuron) + ' hidden neurons: ' + str(mean_cve))

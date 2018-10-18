@@ -142,7 +142,7 @@ def main():
     train_err = []
     test_acc = []
     final_test_acc = []
-    decay_SS = [0, 10**-3, 10**-6, 10**-9, 10**-12] # hidden neurons search space
+    decay_SS = [0, 10**-3, 10**-6, 10**-9, 10**-12] # decay param search space
     
     
     fig1 = plt.figure(2, figsize=(10,5))
