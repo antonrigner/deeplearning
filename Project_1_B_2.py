@@ -15,7 +15,12 @@ import pylab as plt
 import sys
 import time
 import math
+import os
 
+if not os.path.isdir('figuresB2'):
+    print('Creating the figures folder')
+    os.makedirs('figuresB2')
+    
 NUM_FEATURES = 8
 
 epochs = 500
@@ -158,14 +163,16 @@ def main():
             lowest_error = cross_val_error
             print('NEW LOWEST CVE: ' + str(lowest_error))
             print('RMSE: ' + str(math.sqrt(lowest_error)))
+            
     # plot test errors for best model
     plt.figure(1)
     plt.plot(range(epochs), test_err)
     plt.xlabel(str(epochs) + ' iterations')
     plt.ylabel('Test Errors for best model')
+    plt.savefig('./figuresB2/PartB_2_TestErrBest.png')
     plt.show()
     
-    print(learningRateSS[np.argmin(cross_val_errors)])
+#    print(learningRateSS[np.argmin(cross_val_errors)])
     fig = plt.figure(2)
     ax1 = fig.add_subplot(211)
     ax1.set_title('Mean cross validation error')
@@ -174,6 +181,7 @@ def main():
     ax1.xaxis.set_ticklabels(learningRateSS)
     ax1.set_xlabel('Learning rate')
     ax1.set_ylabel('Cross validation error')
+    fig.savefig('./figuresB2/PartB_2_CVEs.png')
     fig.show()
     
 if __name__ == '__main__':

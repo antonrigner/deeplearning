@@ -15,7 +15,12 @@ import pylab as plt
 import sys
 import time
 import math
+import os
 
+if not os.path.isdir('figuresB3'):
+    print('Creating the figures folder')
+    os.makedirs('figuresB3')
+    
 NUM_FEATURES = 8
 
 epochs = 500
@@ -43,10 +48,6 @@ def getData():
     
     trainX = (trainX- np.mean(trainX, axis=0))/ np.std(trainX, axis=0)
     
-#    trainX = trainX[:0.7*n]
-#    testX = trainX[0.7*n+1:]
-#    print(str(trainX.shape[0]))
-#    print(str(testX.shape[0]))
 #    # experiment with small datasets
 #    trainX = trainX[:200]
 #    trainY = trainY[:200]
@@ -176,6 +177,7 @@ def main():
     plt.plot(range(epochs), test_err)
     plt.xlabel(str(epochs) + ' iterations')
     plt.ylabel('Test Errors for best model')
+    plt.savefig('./figuresB3/PartB_3_TestErrBest.png')
     plt.show()
     print('----- FINAL TEST ERROR: ' + str(test_err[epochs-1]) + ' -----')
     print('----- FINAL RMSE: ' + str(math.sqrt(test_err[epochs-1])) + ' -----')
@@ -188,6 +190,7 @@ def main():
     ax1.xaxis.set_ticklabels(neuronSS)
     ax1.set_xlabel('Number of neurons in hidden ReLU layer')
     ax1.set_ylabel('Cross validation error')
+    fig2.savefig('./figuresB3/Part2_3_CVEs.png')
 
 if __name__ == '__main__':
     start_time = time.time()

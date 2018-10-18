@@ -12,7 +12,11 @@ Created on Sun Oct 14 12:07:49 2018
 import tensorflow as tf
 import numpy as np
 import pylab as plt
+import os
 
+if not os.path.isdir('figuresB1'):
+    print('Creating the figures folder')
+    os.makedirs('figuresB1')
 
 NUM_FEATURES = 8
 
@@ -40,15 +44,10 @@ def getData():
     
     trainX = (trainX- np.mean(trainX, axis=0))/ np.std(trainX, axis=0)
     
-#    trainX = trainX[:0.7*n]
-#    testX = trainX[0.7*n+1:]
-#    print(str(trainX.shape[0]))
-#    print(str(testX.shape[0]))
 #    # experiment with small datasets
     trainX = trainX[:1000]
     trainY = trainY[:1000]
     
-    #TODO: Random subsampling instead of same data?
     # Divide data into validation and testing data
     n = trainX.shape[0]
     print('Length of trainX before dividing the data: ' + str(n))
@@ -115,6 +114,7 @@ def runModel():
     plt.plot(range(epochs), train_err)
     plt.xlabel(str(epochs) + ' iterations')
     plt.ylabel('Train Error')
+    plt.savefig('./figuresB1/PartB_1_TrainErr.png')
     plt.show()
     
     # plot predicted values and targets
@@ -126,6 +126,7 @@ def runModel():
     ax1.scatter(range(50), targets, color='red', marker='x', label='Predictions')
     ax1.set_xlabel('Test number')
     ax1.set_ylabel('Housing price')
+    fig.savefig('./figuresB1/PartB1_Predictions.png')
     
     return train_err, pred
 

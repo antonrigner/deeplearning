@@ -12,10 +12,14 @@ Created on Mon Oct 15 16:04:36 2018
 import tensorflow as tf
 import numpy as np
 import pylab as plt
-import sys
 import time
 import math
+import os
 
+if not os.path.isdir('figuresB4'):
+    print('Creating the figures folder')
+    os.makedirs('figuresB4')
+    
 NUM_FEATURES = 8
 
 num_hidden1 = 100 # use optimum nbr of neurons
@@ -171,23 +175,15 @@ def main():
     
     cross_val_error, test_err = runModel(trainX, trainY, testX, testY)
 
-    # plot test errors for best model
+    # plot test errors
     plt.figure(1)
     plt.plot(range(epochs), test_err)
     plt.xlabel(str(epochs) + ' iterations')
-    plt.ylabel('Test Errors model')
+    plt.ylabel('Test Errors')
+    plt.savefig('./figuresB4/PartB_4_TestErr.png')
     plt.show()
     print('----- FINAL TEST ERROR: ' + str(test_err[epochs-1]) + ' -----')
     print('----- FINAL TEST RMSE: ' + str(math.sqrt(test_err[epochs-1])) + ' -----')
-
-#    fig = plt.figure(2)
-#    ax1 = fig.add_subplot(211)
-#    ax1.set_title('Mean cross validation error')
-#    ax1.scatter([1,2,3,4,5, 6], cross_val_errors)
-#    ax1.xaxis.set_ticks([1,2,3,4,5,6])
-#    ax1.xaxis.set_ticklabels(neuronSS)
-#    ax1.set_xlabel('Number of neurons in hidden ReLU layer')
-#    ax1.set_ylabel('Cross validation error')
         
 if __name__ == '__main__':
     start_time = time.time()
