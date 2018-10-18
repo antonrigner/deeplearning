@@ -12,7 +12,12 @@ import math
 import tensorflow as tf
 import numpy as np
 import pylab as plt
+import os
 
+if not os.path.isdir('figuresA5'):
+    print('Creating the figures folder')
+    os.makedirs('figuresA5')
+    
 # scale data
 def scale(X, X_min, X_max):
     return (X - X_min)/(X_max-X_min)
@@ -111,6 +116,7 @@ plt.title('Train Accurracy for 4 layer network')
 plt.plot(range(epochs), train_acc)
 plt.xlabel(str(epochs) + ' iterations')
 plt.ylabel('Train accuracy')
+plt.savefig('./figuresA5/PartA_5_TrainAcc.png')
 plt.show()
 
 plt.figure(2)
@@ -118,6 +124,7 @@ plt.title('Test Accurracy for 4 layer network')
 plt.plot(range(epochs), test_acc)
 plt.xlabel(str(epochs) + ' iterations')
 plt.ylabel('Test accuracy')
+plt.savefig('./figuresA5/PartA_5_TestAcc.png')
 plt.show()
 
 

@@ -20,6 +20,11 @@ import tensorflow as tf
 import numpy as np
 import pylab as plt
 import timeit
+import os
+
+if not os.path.isdir('figuresA4'):
+    print('Creating the figures folder')
+    os.makedirs('figuresA4')
 
 # scale data
 def scale(X, X_min, X_max):
@@ -28,9 +33,9 @@ def scale(X, X_min, X_max):
 NUM_FEATURES = 36 # nbr of inputs per sample (4*3*3)
 NUM_CLASSES = 6 # output classes
 
-learning_rate = 0.5 # alpha
+learning_rate = 0.01 # alpha
 #beta = 10**-6 # weight decay parameter
-epochs = 201
+epochs = 1000
 seed = 10
 np.random.seed(seed)
 
@@ -54,10 +59,10 @@ def getData():
     testY[np.arange(test_Y.shape[0]), test_Y-1] = 1
     
 #     experiment with small datasets
-    trainX = trainX[:1000]
-    trainY = trainY[:1000]
-    testX = testX[:500]
-    testY = testY[:500]
+#    trainX = trainX[:1000]
+#    trainY = trainY[:1000]
+#    testX = testX[:500]
+#    testY = testY[:500]
     
     return trainX, trainY, testX, testY
 
@@ -139,6 +144,13 @@ def main():
     final_test_acc = []
     decay_SS = [0, 10**-3, 10**-6, 10**-9, 10**-12] # hidden neurons search space
     
+    
+    fig1 = plt.figure(2, figsize=(10,5))
+    ax1 = fig1.add_subplot(111)
+    ax1.set_title('Training Errors for different decay paramaters')# + str(batchsize))
+    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
+    ax1.set_ylabel('Train error')
+
     # run the 5 models, store the validation data (training error, testing accurracy and avg time for training)
     for decayParam in decay_SS:
         modeldata = runModel(10, 32, decayParam)
@@ -146,23 +158,13 @@ def main():
         test_acc = modeldata[1]
         avgtime.append(np.mean(modeldata[2])) # average out how much time to train ONE epoch
         
-        print('Final training error: ' + str(train_err[epochs-1]))
-        plt.figure(2)
-        plt.title('Training Errors, hidden neurons: ' + str(decayParam))
-        plt.plot(range(epochs), train_err)
-        plt.xlabel(str(epochs) + ' iterations/epochs')
-        plt.ylabel('Train error')
-        plt.show()
-        
+#        print('Final training error: ' + str(train_err[epochs-1]))
+        ax1.plot(range(epochs), train_err)
         final_test_acc.append(test_acc[epochs-1])
-        print('Final Test accurracy: ' + str(test_acc[epochs-1]))
-#        plt.figure(3)
-#        plt.title('Test Accurracy for hidden neurons: ' + str(10))
-#        plt.plot(range(epochs), test_acc)
-#        plt.xlabel(str(epochs) + ' iterations/epochs')
-#        plt.ylabel('Test accuracy')
-#        plt.show()
-        
+       
+    fig1.legend(['0', '10^-3', '10^-6', '10^-9', '10^-12'])
+    fig1.savefig('./figuresA4/PartA_4_TrainError.png')
+    fig1.show()
     
     fig = plt.figure(1)
     ax1 = fig.add_subplot(211)
@@ -172,6 +174,7 @@ def main():
     ax1.xaxis.set_ticklabels(decay_SS)
     ax1.set_xlabel('Decay parameter')
     ax1.set_ylabel('Final test accurracy')
+    fig.savefig('./figuresA4/PartA_4_Final_TestAcc.png')
 
 if __name__ == '__main__':
     main()
