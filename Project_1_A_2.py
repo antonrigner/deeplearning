@@ -6,6 +6,11 @@ import tensorflow as tf
 import numpy as np
 import pylab as plt
 import timeit
+import os
+
+if not os.path.isdir('figuresA2'):
+    print('Creating the figures folder')
+    os.makedirs('figuresA2')
 
 # scale data
 def scale(X, X_min, X_max):
@@ -14,9 +19,9 @@ def scale(X, X_min, X_max):
 NUM_FEATURES = 36 # nbr of inputs per sample (4*3*3)
 NUM_CLASSES = 6 # output classes
 
-learning_rate = 0.01 # alpha
+learning_rate = 0.5 # alpha
 beta = 10**-6 # weight decay parameter
-epochs = 1001
+epochs = 200
 seed = 10
 np.random.seed(seed)
 
@@ -40,10 +45,10 @@ def getData():
     testY[np.arange(test_Y.shape[0]), test_Y-1] = 1
     
     # experiment with small datasets
-#    trainX = trainX[:1000]
-#    trainY = trainY[:1000]
-#    testX = testX[:500]
-#    testY = testY[:500]
+    trainX = trainX[:1000]
+    trainY = trainY[:1000]
+    testX = testX[:500]
+    testY = testY[:500]
     
     return trainX, trainY, testX, testY
 
@@ -124,6 +129,17 @@ def main():
     test_acc = []
     batchSS = [4, 8 ,16, 32, 64] # batch search space
     
+    fig1 = plt.figure(2, figsize=(10,5))
+    ax1 = fig1.add_subplot(111)
+    ax1.set_title('Training Errors for different batch sizes')# + str(batchsize))
+    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
+    ax1.set_ylabel('Train error')
+    
+    fig2 = plt.figure(3, figsize=(10,5))
+    ax2 = fig2.add_subplot(111)
+    ax2.set_title('Test Accurracy for different batch sizes')
+    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
+    ax2.set_ylabel('Test accuracy')
     # run the 5 models, store the validation data (training error, testing accurracy and avg time for training)
     for batchsize in batchSS:
         modeldata = runModel(10, batchsize)
@@ -131,28 +147,29 @@ def main():
         test_acc = modeldata[1]
         avgtime.append(np.mean(modeldata[2])) # average out how much time to train ONE epoch
         
-        print('Final training error: ' + str(train_err[epochs-1]))
-        plt.figure(2)
-        plt.title('Training Errors for batch size ' + str(batchsize))
-        plt.plot(range(epochs), train_err)
-        plt.xlabel(str(epochs) + ' iterations/epochs')
-        plt.ylabel('Train error')
-        plt.show()
+        #print('Final training error: ' + str(train_err[epochs-1]))
+        ax1.plot(range(epochs), train_err)
+        fig1.show()
         
-        print('Final Test accurracy: ' + str(test_acc[epochs-1]))
-        plt.figure(3)
-        plt.title('Test Accurracy for batch size ' + str(batchsize))
-        plt.plot(range(epochs), test_acc)
-        plt.xlabel(str(epochs) + ' iterations/epochs')
-        plt.ylabel('Test accuracy')
-        plt.show()
+        #print('Final Test accurracy: ' + str(test_acc[epochs-1]))
+        ax2.plot(range(epochs), test_acc)
+        fig2.show()
         
+    fig1.legend(['Batch Size = 4', 'Batch Size = 8', 'Batch Size = 16', 'Batch Size = 32', 'Batch Size = 64'])
+    fig1.savefig('./figuresA2/PartA_2_TrainError.png')
+    fig1.show()
+    
+    fig2.legend(['Batch Size = 4', 'Batch Size = 8', 'Batch Size = 16', 'Batch Size = 32', 'Batch Size = 64'])
+    fig2.savefig('./figuresA2/PartA_2_TestAcc.png')
+    fig2.show()
+    
     plt.figure(1)
     plt.title('Average time for one epoch for different batch sizes')
     plt.xticks(batchSS)
     plt.scatter(batchSS, avgtime)
     plt.xlabel('Batch Size')
     plt.ylabel('Average epoch training time')
+    plt.savefig('./figuresA2/PartA_2_TrainTime.png')
     plt.show()
 
 if __name__ == '__main__':

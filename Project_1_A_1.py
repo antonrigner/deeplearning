@@ -1,22 +1,29 @@
 #
-# Project 1, starter code part a
+# Project 1, Question 1
 #
 import math
 import tensorflow as tf
 import numpy as np
 import pylab as plt
+import os
 
+if not os.path.isdir('figuresA1'):
+    print('Creating the figures folder')
+    os.makedirs('figuresA1')
+    
 # scale data
 def scale(X, X_min, X_max):
     return (X - X_min)/(X_max-X_min)
 
+
+
 NUM_FEATURES = 36 # nbr of inputs per sample (4*3*3)
 NUM_CLASSES = 6 # output classes
-NUM_HIDDEN = 10 # 10 neurons in hidden layer
+NUM_HIDDEN = 10 # 10 neurons in hidden perceptron layer
 
 learning_rate = 0.01 # alpha
 beta = 10**-6 # weight decay parameter
-epochs = 1001
+epochs = 1000
 batch_size = 32 # 32 samples per training batch
 seed = 10
 np.random.seed(seed)
@@ -54,10 +61,9 @@ h = tf.nn.sigmoid(z)
 logits  = tf.matmul(h, softmax_weights) + softmax_biases # h*softmax_weights + softmax_biases (logits = unscaled log-probabilities)
 # Original loss function
 cross_entropy = (tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_, logits=logits)) # logits input to softmax
-#loss = tf.reduce_mean(cross_entropy)
 # L2 norms regularization for both the hidden and softmax layer
 regularizers = tf.nn.l2_loss(softmax_weights) + tf.nn.l2_loss(hidden_weights)
-# Regularized loss
+# Regularized loss function
 loss = tf.reduce_mean(cross_entropy + beta * regularizers)
 
 # Create the gradient descent optimizer with the given learning rate.
@@ -65,7 +71,7 @@ optimizer = tf.train.GradientDescentOptimizer(learning_rate) # optimizer object,
 train_op = optimizer.minimize(loss)
 
 correct_prediction = tf.cast(tf.equal(tf.argmax(tf.nn.softmax(logits), 1), tf.argmax(y_, 1)), tf.float32)
-accuracy = tf.reduce_mean(correct_prediction)
+accuracy = tf.reduce_mean(correct_prediction) # average correct predictions (calculated each epoch)
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -88,6 +94,7 @@ plt.figure(1)
 plt.plot(range(epochs), train_acc)
 plt.xlabel(str(epochs) + ' iterations')
 plt.ylabel('Train accuracy')
+plt.savefig('./figuresA1/PartA_1.png')
 plt.show()
 
 
