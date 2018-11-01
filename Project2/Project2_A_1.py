@@ -16,11 +16,13 @@ import pylab as plt
 import pickle
 import os
 
-if not os.path.isdir('figuresA5'):
+if not os.path.isdir('figuresA1'):
     print('Creating the figures folder')
-    os.makedirs('figuresA5')
+    os.makedirs('figuresA1')
     
-
+#TODO: Check initialization, check reasonable acurracy, ReLU for Fully connected?
+#TODO: Grid search suitable parameters, vary seed size?
+    
 NUM_CLASSES = 10 # 10 object classes
 IMG_SIZE = 32 # 32x32 pixels
 NUM_CHANNELS = 3 # RGB channels
@@ -28,7 +30,7 @@ NUM_FILTERS_C1 = 50# Filters in Convolution layer 1
 NUM_FILTERS_C2 = 60 # Filters in Convolution layer 2
 NUM_FCONNECTED = 300 # Fully connected layer
 learning_rate = 0.001 # 0.001
-epochs = 10
+epochs = 1
 batch_size = 128
 
 seed = 10
@@ -159,15 +161,17 @@ def main():
 
             print('epoch', e, 'entropy', loss_)
             
-        nbrTestImages = 5
-        
-        for i in range(nbrTestImages):
+        # After training, plot test images with corresponding convolutional and pooling feature maps
+        # Predictions for the test images are printed
+        nbrTestImages = 2
+        for nbrimg in range(nbrTestImages):
             ind = np.random.randint(low=0, high=len(testX))
             X = testX[ind]
             img = X.reshape(NUM_CHANNELS, IMG_SIZE, IMG_SIZE).transpose(1, 2, 0) # Original image
             X = X.reshape(1, IMG_SIZE*IMG_SIZE*NUM_CHANNELS) # Transpose
             conv_1_, conv_2_, pool_1_, pool_2_ = sess.run([conv_1, conv_2, pool_1, pool_2], feed_dict={x: X})
             
+            # Evaluate class prediction for the test image
             prediction_ = sess.run(prediction, feed_dict={x: X})
             # Extract the top 5 most likely classes
             idxs = np.argsort(prediction_, axis=1)
@@ -179,26 +183,46 @@ def main():
             print('Original test image with class ', np.argmax(testY[ind]))
             plt.figure()
             plt.subplot(1, 1, 1); plt.axis('off'); plt.imshow(img)
+            plt.savefig('./figuresA1/PartA_1_Img' + str(nbrimg) + '.png')
             plt.show()
             
+            # Plot convolutional feature maps
             print('Convolution layer 1 feature maps')
             plt.figure(figsize=(8,8))
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(conv_1_[0, :, :, i])
+            plt.savefig('./figuresA1/PartA_1_Conv1' + str(nbrimg) + '.png')
             plt.show()
             
+            # Plot pooling feature maps
             print('Pool 1 feature maps (MAX pooling)')
             plt.figure(figsize=(8,8))
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(pool_1_[0, :, :, i])
+            plt.savefig('./figuresA1/PartA_1_Pool1' + str(nbrimg) + '.png')
             plt.show()        
+            
+            # Convolution and pool layer 2
+            print('Convolution layer 2 feature maps')
+            plt.figure(figsize=(8,8))
+            for i in range(NUM_FILTERS_C1):
+                plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(conv_2_[0, :, :, i])
+            plt.savefig('./figuresA1/PartA_1_Conv2' + str(nbrimg) + '.png')
+            plt.show()
+            
+            print('Pool 2 feature maps (MAX pooling)')
+            plt.figure(figsize=(8,8))
+            for i in range(NUM_FILTERS_C1):
+                plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(pool_2_[0, :, :, i])
+            plt.savefig('./figuresA1/PartA_1_Pool2' + str(nbrimg) + '.png')
+            plt.show()      
 
     plt.figure(1)
     plt.title('Training Cost (Cross entropy)')
     plt.plot(range(epochs), train_cost)
     plt.xlabel(str(epochs) + ' iterations')
-    plt.ylabel('Training cost')
-    plt.savefig('./figuresA5/PartA_5_TrainAcc.png')
+    plt.ylabel('Cross entropy')
+    plt.savefig('./figuresA1/PartA_1_TrainCost.png')
     plt.show()
     
     plt.figure(2)
@@ -206,7 +230,7 @@ def main():
     plt.plot(range(epochs), test_acc)
     plt.xlabel(str(epochs) + ' iterations')
     plt.ylabel('Test accuracy')
-    plt.savefig('./figuresA5/PartA_5_TestAcc.png')
+    plt.savefig('./figuresA1/PartA_1_TestAcc.png')
     plt.show()
 
 if __name__ == '__main__':
