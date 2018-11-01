@@ -53,8 +53,8 @@ def load_data(file):
     labels_[np.arange(labels.shape[0]), labels-1] = 1 # one hot matrix for classes
     
     # Experiment with smaller data size
-#    data = data[:1000]
-#    labels_ = labels_[:1000]
+#    data = data[:500]
+#    labels_ = labels_[:500]
     return data, labels_
 
 def weight_variable(shape):
@@ -81,10 +81,6 @@ def cnn(images):
     
     # Pooling layer 1, downsampling by 2
     pool_1 = tf.nn.max_pool(conv_1, ksize= [1, 2, 2, 1], strides= [1, 2, 2, 1], padding='VALID', name='pool_1')
-#    print('Shape of pool_1, fed into Conv_2: ' + str(pool_1.get_shape()))
-    # Flatten pool layer
-#    dim1 = pool_1.get_shape()[1].value * pool_1.get_shape()[2].value * pool_1.get_shape()[3].value
-#    pool_1_flat = tf.reshape(pool_1, [-1, dim1])
     
     # Convolutional layer 2, 5x5 Window
     W_conv2 = weight_variable([5, 5, NUM_FILTERS_C1, NUM_FILTERS_C2])
@@ -109,7 +105,7 @@ def cnn(images):
     b_softmax = bias_variable([NUM_CLASSES])
     logits = tf.matmul(z_fc, W_softmax) + b_softmax
 
-    return logits, pool_1
+    return logits, conv_1, conv_2, pool_1, pool_2
 
 
 def main():    
@@ -124,28 +120,24 @@ def main():
     trainX = (trainX - np.min(trainX, axis = 0))/np.max(trainX, axis = 0) # pixel scaling 0 to 1
     testX = (testX - np.min(testX, axis = 0))/np.max(testX, axis = 0) # pixel scaling 0 to 1
 
-#    imgTest = testX[55]
-#    print(imgTest)
-#    imgTest = imgTest.reshape(NUM_CHANNELS, IMG_SIZE, IMG_SIZE).transpose(1, 2, 0)
-#    print(imgTest)
-#    plt.figure()
-#    plt.subplot(1, 3, 1); plt.axis('off'); plt.imshow(imgTest)
-
     # Create the model
     x = tf.placeholder(tf.float32, [None, IMG_SIZE*IMG_SIZE*NUM_CHANNELS]) # 32x32x3, input image
     y_ = tf.placeholder(tf.float32, [None, NUM_CLASSES])
 
+    # Build the layers
+    logits, conv_1, conv_2, pool_1, pool_2 = cnn(x)
     
-    logits, pool_1 = cnn(x)
-
+    # Loss function to minimize
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_, logits=logits)
     loss = tf.reduce_mean(cross_entropy)
     
+    # Class predictions and accuracy
     prediction = tf.nn.softmax(logits)
     correct_prediction = tf.cast(tf.equal(tf.argmax(prediction, 1), tf.argmax(y_, 1)), tf.float32)
     accuracy = tf.reduce_mean(correct_prediction)
 
-    train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+    # Optimizer for training
+    train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
     N = len(trainX)
     idx = np.arange(N)
@@ -158,22 +150,48 @@ def main():
             trainX, trainY = trainX[idx], trainY[idx]
 
             for start, end in zip(range(0, N, batch_size), range(batch_size, N, batch_size)):
-                train_step.run(feed_dict={x: trainX[start:end,:], y_: trainY[start:end,:]})
+                train_op.run(feed_dict={x: trainX[start:end,:], y_: trainY[start:end,:]})
 
 
-            test_acc.append(accuracy.eval(feed_dict={x: testX, y_: testY})) # sasve accurracy for every epoch   
-            train_cost.append(loss.eval(feed_dict={x: trainX, y_: trainY})) # store training cost for every epoch        
+            test_acc.append(accuracy.eval(feed_dict={x: testX, y_: testY})) # save accurracy for every epoch   
+            loss_ = sess.run(loss, {x: trainX, y_: trainY})
+            train_cost.append(loss_)
 
-#            pred = sess.run(prediction, {x: testX[:3,:]})
-            loss_, pool_1_= sess.run([loss, pool_1], {x: trainX, y_: trainY})
-
-            print()
             print('epoch', e, 'entropy', loss_)
-            print()
-#            print('Test classes:\n', testY[:3])
-#            np.set_printoptions(precision=4,suppress=True)
-#            print('Test prediction:\n', pred)
-
+            
+        nbrTestImages = 5
+        
+        for i in range(nbrTestImages):
+            ind = np.random.randint(low=0, high=len(testX))
+            X = testX[ind]
+            img = X.reshape(NUM_CHANNELS, IMG_SIZE, IMG_SIZE).transpose(1, 2, 0) # Original image
+            X = X.reshape(1, IMG_SIZE*IMG_SIZE*NUM_CHANNELS) # Transpose
+            conv_1_, conv_2_, pool_1_, pool_2_ = sess.run([conv_1, conv_2, pool_1, pool_2], feed_dict={x: X})
+            
+            prediction_ = sess.run(prediction, feed_dict={x: X})
+            # Extract the top 5 most likely classes
+            idxs = np.argsort(prediction_, axis=1)
+            rev = np.fliplr(idxs)
+            np.set_printoptions(precision=4,suppress=True)
+            print('The top 5 predicted classes, left is most probable:\n', rev[:,:5])
+            
+            # Plot original image'
+            print('Original test image with class ', np.argmax(testY[ind]))
+            plt.figure()
+            plt.subplot(1, 1, 1); plt.axis('off'); plt.imshow(img)
+            plt.show()
+            
+            print('Convolution layer 1 feature maps')
+            plt.figure(figsize=(8,8))
+            for i in range(NUM_FILTERS_C1):
+                plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(conv_1_[0, :, :, i])
+            plt.show()
+            
+            print('Pool 1 feature maps (MAX pooling)')
+            plt.figure(figsize=(8,8))
+            for i in range(NUM_FILTERS_C1):
+                plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(pool_1_[0, :, :, i])
+            plt.show()        
 
     plt.figure(1)
     plt.title('Training Cost (Cross entropy)')
@@ -190,24 +208,6 @@ def main():
     plt.ylabel('Test accuracy')
     plt.savefig('./figuresA5/PartA_5_TestAcc.png')
     plt.show()
-
-    ind = np.random.randint(low=0, high=500)
-    X = trainX[ind,:]
-    
-    plt.figure()
-    plt.gray()
-    X_show = X.reshape(NUM_CHANNELS, IMG_SIZE, IMG_SIZE).transpose(1, 2, 0)
-    plt.axis('off')
-    plt.imshow(X_show)
-    plt.savefig('./p1b_2.png')
-    
-    plt.figure()
-    plt.subplot(1, 3, 1); plt.axis('off'); plt.imshow(testX[1])
-#    plt.gray();
-#    plt.subplot(1, 3, 2); plt.axis('off'); plt.imshow(o_[0, :, :, 0])
-#    plt.subplot(1, 3, 3); plt.axis('off'); plt.imshow(o_[0, :, :, 1])
-#    plt.savefig('./figures/t7q2_3.png')
-
 
 if __name__ == '__main__':
   main()
