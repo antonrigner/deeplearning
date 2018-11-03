@@ -23,7 +23,7 @@ if not os.path.isdir('figuresA2'):
     os.makedirs('figuresA2')
     
 #TODO: Grid search suitable parameters, vary seed size. Early stopping, try more iterations, AlexNet...
-# Save figures
+# Save figures, cross validation?
     
 NUM_CLASSES = 10 # 10 object classes
 IMG_SIZE = 32 # 32x32 pixels
