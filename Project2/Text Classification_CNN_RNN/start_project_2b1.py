@@ -35,7 +35,7 @@ def char_cnn_model(x):
         strides=POOLING_STRIDE,
         padding='SAME')
 
-    pool1 = tf.squeeze(tf.reduce_max(conv1, 1), squeeze_dims=[1])
+    pool1 = tf.squeeze(tf.reduce_max(pool1, 1), squeeze_dims=[1])
 
   logits = tf.layers.dense(pool1, MAX_LABEL, activation=None)
 

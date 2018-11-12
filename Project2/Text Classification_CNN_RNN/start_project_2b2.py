@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas
 import tensorflow as tf
@@ -63,7 +64,6 @@ def data_read_words():
 
   no_words = len(vocab_processor.vocabulary_)
   print('Total words: %d' % no_words)
-
   return x_train, y_train, x_test, y_test, no_words
 
 def main():
