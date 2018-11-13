@@ -1,10 +1,9 @@
-#    # -*- coding: utf-8 -*-
-#    """
-#    Created on Mon Nov 12 10:12:09 2018
-#    
-#    @author: Anton
-#    """
-#    
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 13 13:18:10 2018
+
+@author: Anton
+"""    
 import pylab as plt
 import numpy as np
 import pandas
@@ -13,20 +12,15 @@ import csv
 import time
 import os
 
-if not os.path.isdir('figuresB1'):
+if not os.path.isdir('figuresB3'):
     print('Creating the figures folder')
-    os.makedirs('figuresB1')
-
+    os.makedirs('figuresB3')
 
 #TODO: Figure folder, correct batch size and full data training, combat overfitting? Remove prints
 
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
-N_FILTERS = 10
-FILTER_SHAPE1 = [20, 256] # Kernel size for CNN 1
-FILTER_SHAPE2 = [20, 1] # CNN 2
-POOLING_WINDOW = 4 # 4x4
-POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
+HIDDEN_SIZE = 20
 
 epochs = 5
 lr = 0.01
@@ -37,45 +31,18 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
 tf.set_random_seed(seed)
 
-def char_cnn_model(x, keep_prob):
+def char_rnn_model(x, keep_prob):
 # input layer, different classes of chars for a given input
     input_layer = tf.reshape(
-            tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256, 1]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
+            tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
+    input_chars = tf.unstack(input_layer, axis=1) # Char sequence
     
-    with tf.variable_scope('CNN_Layer1'):
-      conv1 = tf.layers.conv2d(
-              input_layer,
-              filters=N_FILTERS,
-              kernel_size=FILTER_SHAPE1,
-              padding='VALID',
-              activation=tf.nn.relu)
-      conv1_drop = tf.nn.dropout(conv1, keep_prob)
-
-      pool1 = tf.layers.max_pooling2d(
-              conv1_drop,
-              pool_size=POOLING_WINDOW,
-              strides=POOLING_STRIDE,
-              padding='SAME')
-
-    with tf.variable_scope('CNN_Layer2'):
-      conv2 = tf.layers.conv2d(
-              pool1,
-              filters=N_FILTERS,
-              kernel_size=FILTER_SHAPE2,
-              padding='VALID',
-              activation=tf.nn.relu)
-      conv2_drop = tf.nn.dropout(conv2, keep_prob)
-      
-      pool2 = tf.layers.max_pooling2d(
-              conv2_drop,
-              pool_size=POOLING_WINDOW,
-              strides=POOLING_STRIDE,
-              padding='SAME')
-      
-      pool2 = tf.squeeze(tf.reduce_max(pool1, 1), squeeze_dims=[1]) # remove dimensions of size 1 from the shape of the tensor
-
-    logits = tf.layers.dense(pool2, MAX_LABEL, activation=None)
-    return input_layer, logits
+    cell = tf.nn.rnn_cell.GRUCell(HIDDEN_SIZE)
+    _, state = tf.nn.static_rnn(cell, input_chars, dtype=tf.float32)
+    state_drop = tf.nn.dropout(state, keep_prob)
+    
+    logits = tf.layers.dense(state_drop, MAX_LABEL, activation=None)
+    return _, logits
 
 def read_data_chars():
     x_train, y_train, x_test, y_test = [], [], [], []
@@ -116,7 +83,7 @@ def read_data_chars():
   
 def runModel(keep_prob):  
     startTime = time.time()
-    tf.reset_default_graph() 
+    tf.reset_default_graph()
     x_train, y_train, x_test, y_test = read_data_chars()
 
 #    print(x_train.shape)
@@ -128,7 +95,7 @@ def runModel(keep_prob):
     x = tf.placeholder(tf.int64, [None, MAX_DOCUMENT_LENGTH])
     y_ = tf.placeholder(tf.int64)
     
-    inputs, logits = char_cnn_model(x, keep_prob)
+    inputs, logits = char_rnn_model(x, keep_prob)
     
     # Class predictions and accuracy
     prediction = tf.nn.softmax(logits)
@@ -176,8 +143,8 @@ def runModel(keep_prob):
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
 
-    fig1.savefig('./figuresB1/PartB_1_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB1/PartB_1_TestAcc' + str(keep_prob)+'.png')
+    fig1.savefig('./figuresB3/PartB_3_TrainError' + str(keep_prob)+'.png')
+    fig2.savefig('./figuresB3/PartB_3_TestAcc' + str(keep_prob)+'.png')
     fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     end = time.time()

@@ -1,10 +1,9 @@
-#    # -*- coding: utf-8 -*-
-#    """
-#    Created on Mon Nov 12 10:12:09 2018
-#    
-#    @author: Anton
-#    """
-#    
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 13 15:15:08 2018
+
+@author: Anton
+"""
 import pylab as plt
 import numpy as np
 import pandas
@@ -13,122 +12,97 @@ import csv
 import time
 import os
 
-if not os.path.isdir('figuresB1'):
+if not os.path.isdir('figuresB4'):
     print('Creating the figures folder')
-    os.makedirs('figuresB1')
+    os.makedirs('figuresB4')
 
+#TODO: Epochs, batch size, data size, figures, illustrate prediction
 
-#TODO: Figure folder, correct batch size and full data training, combat overfitting? Remove prints
-
+EMBEDDING_SIZE = 20
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 N_FILTERS = 10
-FILTER_SHAPE1 = [20, 256] # Kernel size for CNN 1
+FILTER_SHAPE1 = [20, EMBEDDING_SIZE] # Kernel size for CNN 1
 FILTER_SHAPE2 = [20, 1] # CNN 2
 POOLING_WINDOW = 4 # 4x4
 POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 
-epochs = 5
+epochs = 10
 lr = 0.01
-batch_size = 128
-#keep_prob = 0.5
+batch_size = 250
+keep_prob = 1.0
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
 tf.set_random_seed(seed)
 
-def char_cnn_model(x, keep_prob):
-# input layer, different classes of chars for a given input
-    input_layer = tf.reshape(
-            tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256, 1]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
+def word_cnn_model(x, keep_prob):
+    word_vectors = tf.contrib.layers.embed_sequence(
+      x, vocab_size=n_words, embed_dim=EMBEDDING_SIZE)
+
+    word_sequence = tf.unstack(word_vectors, axis=1)
     
-    with tf.variable_scope('CNN_Layer1'):
-      conv1 = tf.layers.conv2d(
-              input_layer,
-              filters=N_FILTERS,
-              kernel_size=FILTER_SHAPE1,
-              padding='VALID',
-              activation=tf.nn.relu)
-      conv1_drop = tf.nn.dropout(conv1, keep_prob)
+    cell = tf.nn.rnn_cell.GRUCell(EMBEDDING_SIZE)
+    _, state = tf.nn.static_rnn(cell, word_sequence, dtype=tf.float32)
+    state_drop = tf.nn.dropout(state, keep_prob)
 
-      pool1 = tf.layers.max_pooling2d(
-              conv1_drop,
-              pool_size=POOLING_WINDOW,
-              strides=POOLING_STRIDE,
-              padding='SAME')
+    logits = tf.layers.dense(state_drop, MAX_LABEL, activation=None)
+    return word_sequence, logits
 
-    with tf.variable_scope('CNN_Layer2'):
-      conv2 = tf.layers.conv2d(
-              pool1,
-              filters=N_FILTERS,
-              kernel_size=FILTER_SHAPE2,
-              padding='VALID',
-              activation=tf.nn.relu)
-      conv2_drop = tf.nn.dropout(conv2, keep_prob)
-      
-      pool2 = tf.layers.max_pooling2d(
-              conv2_drop,
-              pool_size=POOLING_WINDOW,
-              strides=POOLING_STRIDE,
-              padding='SAME')
-      
-      pool2 = tf.squeeze(tf.reduce_max(pool1, 1), squeeze_dims=[1]) # remove dimensions of size 1 from the shape of the tensor
-
-    logits = tf.layers.dense(pool2, MAX_LABEL, activation=None)
-    return input_layer, logits
-
-def read_data_chars():
+def read_data_words():
+  
     x_train, y_train, x_test, y_test = [], [], [], []
     with open('train_medium.csv', encoding='utf-8') as filex:
         reader = csv.reader(filex)
         for row in reader:
-            x_train.append(row[1])
+            x_train.append(row[2])
             y_train.append(int(row[0]))
-
-    with open('test_medium.csv', encoding='utf-8') as filex:
+    
+    with open("test_medium.csv", encoding='utf-8') as filex:
         reader = csv.reader(filex)
         for row in reader:
-            x_test.append(row[1])
+            x_test.append(row[2])
             y_test.append(int(row[0]))
-
-#    print('Raw')
-#    print('x_train: ', x_train[10:15])
-#    print('y_train: ', y_train[10:15])       
-#    print('Pandas')     
+  
     x_train = pandas.Series(x_train)
     y_train = pandas.Series(y_train)
     x_test = pandas.Series(x_test)
     y_test = pandas.Series(y_test)
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
-#    print('Char processor')
-    char_processor = tf.contrib.learn.preprocessing.ByteProcessor(MAX_DOCUMENT_LENGTH)
-    x_train = np.array(list(char_processor.fit_transform(x_train)))
-    x_test = np.array(list(char_processor.transform(x_test)))
     y_train = y_train.values
     y_test = y_test.values
-            
-    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
-    return x_train, y_train, x_test, y_test
+  
+    vocab_processor = tf.contrib.learn.preprocessing.VocabularyProcessor(
+            MAX_DOCUMENT_LENGTH)
 
+    x_transform_train = vocab_processor.fit_transform(x_train)
+    x_transform_test = vocab_processor.transform(x_test)
+
+    x_train = np.array(list(x_transform_train))
+    x_test = np.array(list(x_transform_test))
+
+    x_train, y_train, x_test, y_test = x_train[:500], y_train[:500], x_test[:250], y_test[:250]
+
+    no_words = len(vocab_processor.vocabulary_)
+    print('Total words: %d' % no_words)
+    
+    return x_train, y_train, x_test, y_test, no_words
   
 def runModel(keep_prob):  
     startTime = time.time()
+    global n_words
     tf.reset_default_graph() 
-    x_train, y_train, x_test, y_test = read_data_chars()
+    x_train, y_train, x_test, y_test, n_words= read_data_words()
 
 #    print(x_train.shape)
 #    print(y_train.shape)
-    print(len(x_train))
-    print(len(x_test))
+#    print(len(x_train))
+#    print(len(x_test))
     
     # Create the model
     x = tf.placeholder(tf.int64, [None, MAX_DOCUMENT_LENGTH])
     y_ = tf.placeholder(tf.int64)
     
-    inputs, logits = char_cnn_model(x, keep_prob)
+    inputs, logits = word_cnn_model(x, keep_prob)
     
     # Class predictions and accuracy
     prediction = tf.nn.softmax(logits)
@@ -175,20 +149,22 @@ def runModel(keep_prob):
   
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
+    
+    fig1.savefig('./figuresB4/PartB_4_TrainError' + str(keep_prob)+'.png')
+    fig2.savefig('./figuresB4/PartB_4_TestAcc' + str(keep_prob)+'.png')
+    if keep_prob != 1: # Define legend once
+        fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+        fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
 
-    fig1.savefig('./figuresB1/PartB_1_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB1/PartB_1_TestAcc' + str(keep_prob)+'.png')
-    fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-    fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     end = time.time()
     diff = round(end - startTime, 3)
-    print('Total runtime: ', diff, 'seconds.')
-
+    print('Total runtime: ', diff, 'seconds')
+    
 def main():
     print('Running model WITHOUUT dropout')
     runModel(1)
     print('Running model WITH dropout')
     runModel(0.5)
-        
+    
 if __name__ == '__main__':
     main()

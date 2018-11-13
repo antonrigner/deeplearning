@@ -22,7 +22,7 @@ def rnn_model(x):
       x, vocab_size=n_words, embed_dim=EMBEDDING_SIZE)
 
   word_list = tf.unstack(word_vectors, axis=1)
-
+  
   cell = tf.nn.rnn_cell.GRUCell(EMBEDDING_SIZE)
   _, encoding = tf.nn.static_rnn(cell, word_list, dtype=tf.float32)
 
@@ -64,11 +64,11 @@ def data_read_words():
 
   no_words = len(vocab_processor.vocabulary_)
   print('Total words: %d' % no_words)
-  return x_train, y_train, x_test, y_test, no_words
+  return x_train[:500], y_train[:500], x_test[:500], y_test[:500], no_words
 
 def main():
   global n_words
-
+  tf.reset_default_graph()
   x_train, y_train, x_test, y_test, n_words = data_read_words()
 
   # Create the model

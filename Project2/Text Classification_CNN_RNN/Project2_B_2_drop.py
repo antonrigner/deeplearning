@@ -10,6 +10,11 @@ import pandas
 import tensorflow as tf
 import csv
 import time
+import os
+
+if not os.path.isdir('figuresB2'):
+    print('Creating the figures folder')
+    os.makedirs('figuresB2')
 
 #TODO: Epochs, batch size, data size, figures, illustrate prediction
 
@@ -31,7 +36,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
 tf.set_random_seed(seed)
 
-def word_cnn_model(x):
+def word_cnn_model(x, keep_prob):
     word_vectors = tf.contrib.layers.embed_sequence(
       x, vocab_size=n_words, embed_dim=EMBEDDING_SIZE)
     
@@ -112,7 +117,7 @@ def read_data_words():
     
     return x_train, y_train, x_test, y_test, no_words
   
-def main():  
+def runModel(keep_prob):  
     startTime = time.time()
     global n_words
     tf.reset_default_graph() 
@@ -127,7 +132,7 @@ def main():
     x = tf.placeholder(tf.int64, [None, MAX_DOCUMENT_LENGTH])
     y_ = tf.placeholder(tf.int64)
     
-    inputs, logits = word_cnn_model(x)
+    inputs, logits = word_cnn_model(x, keep_prob)
     
     # Class predictions and accuracy
     prediction = tf.nn.softmax(logits)
@@ -175,9 +180,21 @@ def main():
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
     
+    fig1.savefig('./figuresB2/PartB_2_TrainError' + str(keep_prob)+'.png')
+    fig2.savefig('./figuresB2/PartB_2_TestAcc' + str(keep_prob)+'.png')
+    if keep_prob != 1: # Define legend once
+        fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+        fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds')
-        
+    
+def main():
+    print('Running model WITHOUUT dropout')
+    runModel(1)
+    print('Running model WITH dropout')
+    runModel(0.5)
+    
 if __name__ == '__main__':
     main()
