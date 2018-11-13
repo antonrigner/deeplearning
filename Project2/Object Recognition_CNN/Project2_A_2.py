@@ -55,8 +55,8 @@ def load_data(file):
     labels_[np.arange(labels.shape[0]), labels-1] = 1 # one hot matrix for classes
     
     # Experiment with smaller data size
-#    data = data[:250]
-#    labels_ = labels_[:250]
+    data = data[:250]
+    labels_ = labels_[:250]
     return data, labels_
 
 def weight_variable(shape):
@@ -189,7 +189,7 @@ def main():
     ax2.set_xlabel(str(epochs) + ' iterations/epochs')
     ax2.set_ylabel('Test accuracy')
     
-#TODO: Evaluated broad grid -> close in on goal, evaluate again -> report top 5 in plot, rest in grid/matrix in the report
+#TODO: Evaluate broad grid -> close in on goal, evaluate again -> report top 5 in plot, rest in grid/matrix in the report
     # Run models, Grid search (parameter sweep) to evaluate models 
     c1Fmaps = np.array([5,10])# nbr of filters (feature maps)
     c2Fmaps = np.array([5,10])
@@ -203,6 +203,8 @@ def main():
         
         ax1.plot(range(epochs), train_cost)
         ax2.plot(range(epochs), test_acc)
+        print('---------------FINAL TRAINING COST: ', round(train_cost[epochs-1],4),' -------------------')
+        print('---------------FINAL TEST ACCURACY: ', round(test_acc[epochs-1],4),' -------------------')
         # Store pairs for plot legend
         stringPair = str(paramSet[0]) + ', ' + str(paramSet[1])
         legend.append(stringPair)
