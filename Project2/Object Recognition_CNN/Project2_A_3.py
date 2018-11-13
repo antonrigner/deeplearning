@@ -31,7 +31,7 @@ NUM_FCONNECTED = 300 # Fully connected layer
 opt_num_ftr1 = 5 #################### TO BE FOUND IN Q2!
 opt_num_ftr2 = 5 #################### TO BE FOUND IN Q2!
 learning_rate = 0.001 # alpha
-epochs = 10
+epochs = 1
 batch_size = 128
 gamma = 0.1 # momentum parameter
 
@@ -64,8 +64,6 @@ def weight_variable(shape):
   """weight_variable generates a weight variable of a given shape."""
   initial = tf.truncated_normal(shape, stddev=0.1)
   return tf.Variable(initial)
-
-#TODO: default inititalization tensorflow
 
 def bias_variable(shape):
   """bias_variable generates a bias variable of a given shape."""
@@ -180,11 +178,11 @@ def runModel(keep_prob_cnn, keep_prob_fc):
                   
     fig1.legend(['GD','Momentum, 'r'$\gamma$ = ' + str(gamma),'RMSProp','Adam'],loc='lower right')
     fig2.legend(['GD','Momentum, 'r'$\gamma$ = ' + str(gamma),'RMSProp','Adam'],loc='lower right')
-    fig1.show()
-    fig2.show()
+#    fig1.show()
+#    fig2.show()
 
-#    fig1.savefig('./figuresA2/PartA_2_TrainError.png')
-#    fig2.savefig('./figuresA2/PartA_2_TestAcc.png')
+    fig1.savefig('./figuresA3/PartA_3_TrainError' + str(keep_prob_cnn) + str(keep_prob_fc)+'.png')
+    fig2.savefig('./figuresA3/PartA_3_TestAcc' + str(keep_prob_cnn) + str(keep_prob_fc) +'.png')
 
 def main():
     print('Running model WITHOUUT dropout')
