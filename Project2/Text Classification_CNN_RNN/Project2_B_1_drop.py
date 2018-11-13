@@ -105,7 +105,7 @@ def read_data_chars():
     y_train = y_train.values
     y_test = y_test.values
             
-    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
+#    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
 #    print('x_train: ', x_train[:5])
 #    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
