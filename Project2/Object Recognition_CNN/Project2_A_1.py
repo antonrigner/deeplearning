@@ -29,7 +29,7 @@ NUM_FILTERS_C1 = 50# Filters in Convolution layer 1
 NUM_FILTERS_C2 = 60 # Filters in Convolution layer 2
 NUM_FCONNECTED = 300 # Fully connected layer
 learning_rate = 0.001 # 0.001
-epochs = 1
+epochs = 300
 batch_size = 128
 
 seed = 10
@@ -54,16 +54,14 @@ def load_data(file):
     labels_[np.arange(labels.shape[0]), labels-1] = 1 # one hot matrix for classes
     
     # Experiment with smaller data size
-    data = data[:500]
-    labels_ = labels_[:500]
+#    data = data[:500]
+#    labels_ = labels_[:500]
     return data, labels_
 
 def weight_variable(shape):
   """weight_variable generates a weight variable of a given shape."""
   initial = tf.truncated_normal(shape, stddev=0.1)
   return tf.Variable(initial)
-
-#TODO: Initialization
   
 def bias_variable(shape):
   """bias_variable generates a bias variable of a given shape."""
@@ -182,6 +180,7 @@ def main():
             # Plot original image'
             print('Original test image with class ', np.argmax(testY[ind]))
             plt.figure()
+            plt.gray()
             plt.subplot(1, 1, 1); plt.axis('off'); plt.imshow(img)
             plt.savefig('./figuresA1/PartA_1_Img' + str(nbrimg) + '.png')
             plt.show()
@@ -189,6 +188,7 @@ def main():
             # Plot convolutional feature maps
             print('Convolution layer 1 feature maps')
             plt.figure(figsize=(8,8))
+            plt.gray()
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(conv_1_[0, :, :, i])
             plt.savefig('./figuresA1/PartA_1_Conv1' + str(nbrimg) + '.png')
@@ -197,6 +197,7 @@ def main():
             # Plot pooling feature maps
             print('Pool 1 feature maps (MAX pooling)')
             plt.figure(figsize=(8,8))
+            plt.gray()
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(pool_1_[0, :, :, i])
             plt.savefig('./figuresA1/PartA_1_Pool1' + str(nbrimg) + '.png')
@@ -205,6 +206,7 @@ def main():
             # Convolution and pool layer 2
             print('Convolution layer 2 feature maps')
             plt.figure(figsize=(8,8))
+            plt.gray()
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(conv_2_[0, :, :, i])
             plt.savefig('./figuresA1/PartA_1_Conv2' + str(nbrimg) + '.png')
@@ -212,6 +214,7 @@ def main():
             
             print('Pool 2 feature maps (MAX pooling)')
             plt.figure(figsize=(8,8))
+            plt.gray()
             for i in range(NUM_FILTERS_C1):
                 plt.subplot(10, 5, i+1); plt.axis('off'); plt.imshow(pool_2_[0, :, :, i])
             plt.savefig('./figuresA1/PartA_1_Pool2' + str(nbrimg) + '.png')
