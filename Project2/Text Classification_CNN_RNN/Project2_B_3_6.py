@@ -21,7 +21,7 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 5
+epochs = 25
 lr = 0.01
 batch_size = 128
 
@@ -41,15 +41,20 @@ def char_rnn_model(x, keep_prob, model):
 # input layer, different classes of char-s for a given input
     input_layer = tf.reshape(
             tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
-    input_chars = tf.unstack(input_layer, axis=1) # Char sequence
+#    input_chars = tf.unstack(input_layer, axis=1) # Char sequence
     
     cell = cell_fn(HIDDEN_SIZE)
-    print(cell)
-    print(input_chars)
-    _, state = tf.nn.dynamic_rnn(cell, input_chars, dtype=tf.float32)
+
+    _, state = tf.nn.dynamic_rnn(cell, input_layer, dtype=tf.float32)
+    if model == 'lstm':
+        state = state[0]
     state_drop = tf.nn.dropout(state, keep_prob)
     
+    print(model)
     logits = tf.layers.dense(state_drop, MAX_LABEL, activation=None)
+    print(state)
+    print(state_drop)
+    print(logits)
     return _, logits
 
 def read_data_chars():
@@ -83,7 +88,7 @@ def read_data_chars():
     y_train = y_train.values
     y_test = y_test.values
             
-    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
+    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
 #    print('x_train: ', x_train[:5])
 #    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
@@ -116,16 +121,16 @@ def runModel(keep_prob, model):
     N = len(x_train)
     idx = np.arange(N)
       
-    fig1 = plt.figure(2, figsize=(10,5))
-    ax1 = fig1.add_subplot(111)
-    ax1.set_title('Training Cost (Cross entropy)')
-    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
-    ax1.set_ylabel('Cross entropy')  
-    fig2 = plt.figure(3, figsize=(10,5))
-    ax2 = fig2.add_subplot(111)
-    ax2.set_title('Top 1 Test Accurracy')
-    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
-    ax2.set_ylabel('Test accuracy')
+#    fig1 = plt.figure(2, figsize=(10,5))
+#    ax1 = fig1.add_subplot(111)
+#    ax1.set_title('Training Cost (Cross entropy)')
+#    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
+#    ax1.set_ylabel('Cross entropy')  
+#    fig2 = plt.figure(3, figsize=(10,5))
+#    ax2 = fig2.add_subplot(111)
+#    ax2.set_title('Top 1 Test Accurracy')
+#    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
+#    ax2.set_ylabel('Test accuracy')
   
     with tf.Session() as sess:
 
@@ -147,34 +152,49 @@ def runModel(keep_prob, model):
 
             if e%1 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
-  
-    ax1.plot(range(epochs), train_cost)
-    ax2.plot(range(epochs), test_acc)
-
-    fig1.savefig('./figuresB36/PartB_36_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB36/PartB_36_TestAcc' + str(keep_prob)+'.png')
-    fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-    fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+#  
+#    ax1.plot(range(epochs), train_cost)
+#    ax2.plot(range(epochs), test_acc)
+#
+#    fig1.savefig('./figuresB36/PartB_36_TrainError' + str(keep_prob)+'.png')
+#    fig2.savefig('./figuresB36/PartB_36_TestAcc' + str(keep_prob)+'.png')
+#    fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+#    fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds.')
     return train_cost, test_acc
 
 def main():
-    plt.figure()
+    plt.figure(1)
     print('Running GRU model WITHOUT dropout')
     train_cost, test_acc = runModel(1, 'gru')
-    plt.plot(range(epochs), train_cost, label='gru')
-    plt.plot(range(epochs), test_acc, label='gru')
+    plt.plot(range(epochs), train_cost, label='GRU')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='GRU')
 
 #    print('Running GRU model WITH dropout')
 #    train_cost, test_acc = runModel(0.5, 'gru')
 #    plt.plot(range(epochs), train_cost, label='gru')
 #    plt.plot(range(epochs), test_acc, label='gru')
+    
+    print('Running RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'rnn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='RNN')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='RNN')
 
+#    print('Running RNN model WITH dropout')
+#    train_cost, test_acc = runModel(0.5, 'RNN')   
+#    plt.plot(range(epochs), train_cost, label='gru')
+#    plt.plot(range(epochs), test_acc, label='gru')
+    
     print('Running LSTM model WITHOUT dropout')
     train_cost, test_acc = runModel(1, 'lstm')
+    plt.figure(1)
     plt.plot(range(epochs), train_cost, label='LSTM')
+    plt.figure(2)
     plt.plot(range(epochs), test_acc, label='LSTM')
 
 #    print('Running LSTM model WITH dropout')
@@ -182,23 +202,22 @@ def main():
 #    plt.plot(range(epochs), train_cost, label='gru')
 #    plt.plot(range(epochs), test_acc, label='gru')
 
-    print('Running RNN model WITHOUT dropout')
-    train_cost, test_acc = runModel(1, 'rnn')
-    plt.plot(range(epochs), train_cost, label='RNN')
-    plt.plot(range(epochs), test_acc, label='RNN')
 
-#    print('Running RNN model WITH dropout')
-#    train_cost, test_acc = runModel(0.5, 'RNN')   
-#    plt.plot(range(epochs), train_cost, label='gru')
-#    plt.plot(range(epochs), test_acc, label='gru')
-
+    plt.title('Test Acuraccy')
     plt.xlabel('epochs')
-    plt.ylabel('mean square error')
+    plt.ylabel('Test accuracy')
     plt.legend()
     
-    plt.savefig('./figures/9.1b_1.png')
+    plt.savefig('./figuresB36/Comparison_3_6_Testacc.png')
     
+    plt.figure(1)
+    plt.title('Training Cost')
+    plt.xlabel('epochs')
+    plt.ylabel('Training cost (entropy)')
+    plt.legend()
     
+    plt.savefig('./figuresB36/Comparison_3_6_traincost.png')
+
     plt.show()     
 if __name__ == '__main__':
     main()

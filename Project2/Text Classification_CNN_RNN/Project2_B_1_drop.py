@@ -17,9 +17,6 @@ if not os.path.isdir('figuresB1'):
     print('Creating the figures folder')
     os.makedirs('figuresB1')
 
-
-#TODO: Figure folder, correct batch size and full data training, combat overfitting? Remove prints
-
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 N_FILTERS = 10
 FILTER_SHAPE1 = [20, 256] # Kernel size for CNN 1
@@ -170,16 +167,18 @@ def runModel(keep_prob):
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch   
 
 
-            if e%1 == 0:
+            if e%10 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
   
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
 
+    if keep_prob != 1: # Define legend once
+        fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+        fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+
     fig1.savefig('./figuresB1/PartB_1_TrainError' + str(keep_prob)+'.png')
     fig2.savefig('./figuresB1/PartB_1_TestAcc' + str(keep_prob)+'.png')
-    fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-    fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds.')
