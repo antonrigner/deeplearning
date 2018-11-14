@@ -23,12 +23,12 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 1000
+epochs = 25
 lr = 0.005
 batch_size = 128
 
 tf.logging.set_verbosity(tf.logging.ERROR)
-seed = 10
+seed = 1000
 tf.set_random_seed(seed)
 
 def word_rnn_model(x, keep_prob, model):
@@ -96,7 +96,7 @@ def read_data_words():
     x_train = np.array(list(x_transform_train))
     x_test = np.array(list(x_transform_test))
 
-    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:250], y_test[:250]
+    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
 
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
@@ -145,17 +145,17 @@ def runModel(keep_prob, model):
       
     N = len(x_train)
     idx = np.arange(N)
-      
-    fig1 = plt.figure(2, figsize=(10,5))
-    ax1 = fig1.add_subplot(111)
-    ax1.set_title('Training Cost (Cross entropy)')
-    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
-    ax1.set_ylabel('Cross entropy')  
-    fig2 = plt.figure(3, figsize=(10,5))
-    ax2 = fig2.add_subplot(111)
-    ax2.set_title('Top 1 Test Accurracy')
-    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
-    ax2.set_ylabel('Test accuracy')
+#      
+#    fig1 = plt.figure(2, figsize=(10,5))
+#    ax1 = fig1.add_subplot(111)
+#    ax1.set_title('Training Cost (Cross entropy)')
+#    ax1.set_xlabel(str(epochs) + ' iterations/epochs')
+#    ax1.set_ylabel('Cross entropy')  
+#    fig2 = plt.figure(3, figsize=(10,5))
+#    ax2 = fig2.add_subplot(111)
+#    ax2.set_title('Top 1 Test Accurracy')
+#    ax2.set_xlabel(str(epochs) + ' iterations/epochs')
+#    ax2.set_ylabel('Test accuracy')
   
     with tf.Session() as sess:
 
@@ -178,25 +178,66 @@ def runModel(keep_prob, model):
             if e%1 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
   
-    ax1.plot(range(epochs), train_cost)
-    ax2.plot(range(epochs), test_acc)
-    
-    if keep_prob != 1: # Define legend once
-        fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-        fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-
-
-    fig1.savefig('./figuresB4/PartB_4_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB4/PartB_4_TestAcc' + str(keep_prob)+'.png')
+#    ax1.plot(range(epochs), train_cost)
+#    ax2.plot(range(epochs), test_acc)
+#    
+#    if keep_prob != 1: # Define legend once
+#        fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+#        fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+#
+#
+#    fig1.savefig('./figuresB4/PartB_4_TrainError' + str(keep_prob)+'.png')
+#    fig2.savefig('./figuresB4/PartB_4_TestAcc' + str(keep_prob)+'.png')
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds')
-    
+    return train_cost, test_acc
+
 def main():
-    print('Running model WITHOUT dropout')
-    runModel(1, 'lstm')
-    print('Running model WITH dropout')
-    runModel(0.5, 'lstm')
+    tf.logging.set_verbosity(tf.logging.ERROR)
+    tf.set_random_seed(1000)
+    
+    plt.figure(1)
+    print('Running GRU model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'gru')
+    plt.plot(range(epochs), train_cost, label='GRU')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='GRU')
+
+#    print('Running GRU model WITH dropout')
+#    train_cost, test_acc = runModel(0.5, 'gru')
+#    plt.plot(range(epochs), train_cost, label='gru')
+#    plt.plot(range(epochs), test_acc, label='gru')
+    
+    print('Running RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'rnn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='RNN')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='RNN')
+#
+#    print('Running RNN model WITH dropout')
+#    train_cost, test_acc = runModel(0.5, 'rnn')   
+#    plt.figure(1)
+#    plt.plot(range(epochs), train_cost, label='rnn_drop')
+#    plt.figure(2)
+#    plt.plot(range(epochs), test_acc, label='rnn_drop')
+
+    print('Running LSTM model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'lstm')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='LSTM')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='LSTM')
+    
+    print('Running 2RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, '2rnn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='2RNN')
+    plt.legend()
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='2RNN')
+    plt.legend()
     
 if __name__ == '__main__':
     main()

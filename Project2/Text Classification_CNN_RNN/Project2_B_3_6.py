@@ -22,7 +22,7 @@ MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
 epochs = 10
-lr = 0.01
+lr = 0.005
 batch_size = 128
 #
 #tf.logging.set_verbosity(tf.logging.ERROR)
@@ -179,25 +179,27 @@ def runModel(keep_prob, model):
     return train_cost, test_acc
 
 def main():
-#    plt.figure(1)
-#    print('Running GRU model WITHOUT dropout')
-#    train_cost, test_acc = runModel(1, 'gru')
-#    plt.plot(range(epochs), train_cost, label='GRU')
-#    plt.figure(2)
-#    plt.plot(range(epochs), test_acc, label='GRU')
-
     tf.logging.set_verbosity(tf.logging.ERROR)
+    tf.set_random_seed(1000)
+    
+    plt.figure(1)
+    print('Running GRU model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'gru')
+    plt.plot(range(epochs), train_cost, label='GRU')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='GRU')
+
 #    print('Running GRU model WITH dropout')
 #    train_cost, test_acc = runModel(0.5, 'gru')
 #    plt.plot(range(epochs), train_cost, label='gru')
 #    plt.plot(range(epochs), test_acc, label='gru')
-#    
-#    print('Running RNN model WITHOUT dropout')
-#    train_cost, test_acc = runModel(1, 'rnn')
-#    plt.figure(1)
-#    plt.plot(range(epochs), train_cost, label='RNN')
-#    plt.figure(2)
-#    plt.plot(range(epochs), test_acc, label='RNN')
+    
+    print('Running RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'rnn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='RNN')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='RNN')
 #
 #    print('Running RNN model WITH dropout')
 #    train_cost, test_acc = runModel(0.5, 'rnn')   
@@ -206,28 +208,26 @@ def main():
 #    plt.figure(2)
 #    plt.plot(range(epochs), test_acc, label='rnn_drop')
 
-    for seed in [1000, 0, -1000, 33333]:
-        tf.set_random_seed(seed)
-        print('Running LSTM model WITHOUT dropout. Seed: ' + str(seed))
-        train_cost, test_acc = runModel(1, 'lstm')
-        plt.figure(1)
-        plt.plot(range(epochs), train_cost, label='LSTM ' + str(seed))
-        plt.figure(2)
-        plt.plot(range(epochs), test_acc, label='LSTM ' + str(seed))
-        
-        print('Running 2RNN model WITHOUT dropout')
-        train_cost, test_acc = runModel(1, '2rnn')
-        plt.figure(1)
-        plt.plot(range(epochs), train_cost, label='2RNN' + str(seed))
-        plt.figure(2)
-        plt.plot(range(epochs), test_acc, label='2RNN' + str(seed))
-    ###    
+    print('Running LSTM model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, 'lstm')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='LSTM')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='LSTM')
     
-    
-    #    print('Running LSTM model WITH dropout')
-    #    train_cost, test_acc = runModel(0.5, 'lstm')
-    #    plt.plot(range(epochs), train_cost, label='gru')
-    #    plt.plot(range(epochs), test_acc, label='gru')
+    print('Running 2RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, '2rnn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='2RNN')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='2RNN')
+###    
+
+#
+#    print('Running LSTM model WITH dropout')
+#    train_cost, test_acc = runModel(0.5, 'lstm')
+#    plt.plot(range(epochs), train_cost, label='gru')
+#    plt.plot(range(epochs), test_acc, label='gru')
     
     
     plt.title('Test Acuraccy')
