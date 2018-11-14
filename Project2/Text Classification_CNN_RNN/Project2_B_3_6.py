@@ -21,7 +21,7 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 25
+epochs = 10
 lr = 0.01
 batch_size = 128
 
@@ -31,30 +31,33 @@ tf.set_random_seed(seed)
 
 def char_rnn_model(x, keep_prob, model):
     
-    if model == 'rnn':
+    if model == 'rnn' or '2rnn':
         cell_fn = tf.nn.rnn_cell.BasicRNNCell
     elif model == 'gru':
         cell_fn = tf.nn.rnn_cell.GRUCell
     elif model == 'lstm':
         cell_fn = tf.nn.rnn_cell.LSTMCell
+
+#    input_chars = tf.unstack(input_layer, axis=1) # Char sequence
+    if model == '2rnn':
+        cell1 = tf.nn.rnn_cell.BasicRNNell(HIDDEN_SIZE, reuse=tf.get_variable_scope().reuse)
+        cell2 = tf.nn.rnn_cell.BasicRNNCell(HIDDEN_SIZE, reuse=tf.get_variable_scope().reuse)
+        cells = tf.nn.rnn_cell.MultiRNNCell([cell1, cell2])
+    else:
+        cells = cell_fn(HIDDEN_SIZE)
         
-# input layer, different classes of char-s for a given input
+    # input layer, different classes of char-s for a given input
     input_layer = tf.reshape(
             tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
-#    input_chars = tf.unstack(input_layer, axis=1) # Char sequence
-    
-    cell = cell_fn(HIDDEN_SIZE)
+        
 
-    _, state = tf.nn.dynamic_rnn(cell, input_layer, dtype=tf.float32)
-    if model == 'lstm':
-        state = state[0]
+    _, state = tf.nn.dynamic_rnn(cells, input_layer, dtype=tf.float32)
+#    if model == 'lstm':
+#        state = state[0]
     state_drop = tf.nn.dropout(state, keep_prob)
-    
-    print(model)
+
     logits = tf.layers.dense(state_drop, MAX_LABEL, activation=None)
-    print(state)
-    print(state_drop)
-    print(logits)
+
     return _, logits
 
 def read_data_chars():
@@ -88,7 +91,7 @@ def read_data_chars():
     y_train = y_train.values
     y_test = y_test.values
             
-    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
+    x_train, y_train, x_test, y_test = x_train[:1000], y_train[:1000], x_test[:250], y_test[:250]
 #    print('x_train: ', x_train[:5])
 #    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
@@ -116,8 +119,20 @@ def runModel(keep_prob, model):
     accuracy = tf.reduce_mean(correct_prediction)
     # Optimizer
     entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=tf.one_hot(y_, MAX_LABEL), logits=logits))
-    train_op = tf.train.AdamOptimizer(lr).minimize(entropy)
-      
+    minimizer = tf.train.AdamOptimizer(lr)#minimize(entropy)
+    
+    grads_and_vars = minimizer.compute_gradients(entropy)
+
+
+    # Gradient clipping
+    grad_clipping = tf.constant(2.0, name="grad_clipping")
+    clipped_grads_and_vars = []
+    for grad, var in grads_and_vars:
+        clipped_grad = tf.clip_by_value(grad, -grad_clipping, grad_clipping)
+        clipped_grads_and_vars.append((clipped_grad, var))
+     
+    train_op = minimizer.apply_gradients(clipped_grads_and_vars)
+
     N = len(x_train)
     idx = np.arange(N)
       
@@ -149,7 +164,6 @@ def runModel(keep_prob, model):
             train_cost.append(loss_)
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch   
 
-
             if e%1 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
 #  
@@ -168,7 +182,7 @@ def runModel(keep_prob, model):
 def main():
     plt.figure(1)
     print('Running GRU model WITHOUT dropout')
-    train_cost, test_acc = runModel(1, 'gru')
+    train_cost, test_acc = runModel(1, 'GRU')
     plt.plot(range(epochs), train_cost, label='GRU')
     plt.figure(2)
     plt.plot(range(epochs), test_acc, label='GRU')
@@ -196,6 +210,13 @@ def main():
     plt.plot(range(epochs), train_cost, label='LSTM')
     plt.figure(2)
     plt.plot(range(epochs), test_acc, label='LSTM')
+    
+    print('Running 2RNN model WITHOUT dropout')
+    train_cost, test_acc = runModel(1, '2nn')
+    plt.figure(1)
+    plt.plot(range(epochs), train_cost, label='2RNN')
+    plt.figure(2)
+    plt.plot(range(epochs), test_acc, label='2RNN')
 
 #    print('Running LSTM model WITH dropout')
 #    train_cost, test_acc = runModel(0.5, 'lstm')
