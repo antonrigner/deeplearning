@@ -12,9 +12,9 @@ import csv
 import time
 import os
 
-if not os.path.isdir('figuresB4'):
+if not os.path.isdir('figuresB46'):
     print('Creating the figures folder')
-    os.makedirs('figuresB4')
+    os.makedirs('figuresB46')
 
 #TODO: Epochs, batch size, data size, figures, illustrate prediction
 
@@ -23,8 +23,8 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 25
-lr = 0.005
+epochs = 10
+lr = 0.05
 batch_size = 128
 
 tf.logging.set_verbosity(tf.logging.ERROR)
@@ -96,7 +96,7 @@ def read_data_words():
     x_train = np.array(list(x_transform_train))
     x_test = np.array(list(x_transform_test))
 
-    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
+    #x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
 
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
@@ -175,7 +175,7 @@ def runModel(keep_prob, model):
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch   
 
 
-            if e%1 == 0:
+            if e%10 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
   
 #    ax1.plot(range(epochs), train_cost)
@@ -235,9 +235,13 @@ def main():
     plt.figure(1)
     plt.plot(range(epochs), train_cost, label='2RNN')
     plt.legend()
+    plt.show()
+    plt.figure().savefig('./figuresB46/PartB_1.png')
     plt.figure(2)
     plt.plot(range(epochs), test_acc, label='2RNN')
     plt.legend()
+    plt.show()
+    plt.figure().savefig('./figuresB46/PartB_2.png')
     
 if __name__ == '__main__':
     main()
