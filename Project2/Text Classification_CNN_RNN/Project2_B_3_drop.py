@@ -22,7 +22,7 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 5
+epochs = 25
 lr = 0.01
 batch_size = 128
 #keep_prob = 0.5
@@ -36,8 +36,10 @@ def char_rnn_model(x, keep_prob):
     input_layer = tf.reshape(
             tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
     input_chars = tf.unstack(input_layer, axis=1) # Char sequence
-    
+#    print(input_chars)
+#    print(input_layer)
     cell = tf.nn.rnn_cell.GRUCell(HIDDEN_SIZE)
+    print(cell)
     _, state = tf.nn.static_rnn(cell, input_chars, dtype=tf.float32)
     state_drop = tf.nn.dropout(state, keep_prob)
     
@@ -75,7 +77,7 @@ def read_data_chars():
     y_train = y_train.values
     y_test = y_test.values
             
-    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
+#    x_train, y_train, x_test, y_test = x_train[:1000], y_train[:1000], x_test[:250], y_test[:250]
 #    print('x_train: ', x_train[:5])
 #    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
@@ -130,7 +132,7 @@ def runModel(keep_prob):
             np.random.shuffle(idx)
             x_train, y_train = x_train[idx], y_train[idx]
             for start, end in zip(range(0, N, batch_size), range(batch_size, N, batch_size)):  
-                train_op.run(feed_dict={x: x_train, y_: y_train})
+                train_op.run(feed_dict={x: x_train[start:end], y_: y_train[start:end]})
 
             loss_ = entropy.eval(feed_dict={x: x_train, y_: y_train})
             train_cost.append(loss_)

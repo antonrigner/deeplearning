@@ -20,34 +20,50 @@ if not os.path.isdir('figuresB4'):
 
 EMBEDDING_SIZE = 20
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
-N_FILTERS = 10
-FILTER_SHAPE1 = [20, EMBEDDING_SIZE] # Kernel size for CNN 1
-FILTER_SHAPE2 = [20, 1] # CNN 2
-POOLING_WINDOW = 4 # 4x4
-POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
+HIDDEN_SIZE = 20
 
-epochs = 10
-lr = 0.01
-batch_size = 250
-keep_prob = 1.0
+epochs = 1000
+lr = 0.005
+batch_size = 128
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
 tf.set_random_seed(seed)
 
-def word_cnn_model(x, keep_prob):
+def word_rnn_model(x, keep_prob, model):
+    print(model)
+    if model == 'rnn' or model == '2rnn':
+        print('creating cell_fn = basicRNN')
+        cell_fn = tf.nn.rnn_cell.BasicRNNCell
+        print('basic rnn cell created')
+    elif model == 'gru':
+        cell_fn = tf.nn.rnn_cell.GRUCell
+    else:
+        cell_fn = tf.nn.rnn_cell.LSTMCell
+
+    if model == '2rnn':
+        print('creating multiple cells')
+        cell1 = tf.nn.rnn_cell.BasicRNNCell(HIDDEN_SIZE)
+        cell2 = tf.nn.rnn_cell.BasicRNNCell(HIDDEN_SIZE)
+        cells = tf.nn.rnn_cell.MultiRNNCell([cell1, cell2])
+    else:
+        cells = cell_fn(HIDDEN_SIZE)
+    print(cells)
+    
     word_vectors = tf.contrib.layers.embed_sequence(
       x, vocab_size=n_words, embed_dim=EMBEDDING_SIZE)
 
-    word_sequence = tf.unstack(word_vectors, axis=1)
+#    word_sequence = tf.unstack(word_vectors, axis=1)
     
-    cell = tf.nn.rnn_cell.GRUCell(EMBEDDING_SIZE)
-    _, state = tf.nn.static_rnn(cell, word_sequence, dtype=tf.float32)
+    outputs, state = tf.nn.dynamic_rnn(cells, word_vectors, dtype=tf.float32)
+    if model == 'lstm' or model == '2rnn':
+        state = state[1]
+        print('Using state[1], hidden state')
     state_drop = tf.nn.dropout(state, keep_prob)
-
     logits = tf.layers.dense(state_drop, MAX_LABEL, activation=None)
-    return word_sequence, logits
+
+    return outputs, logits, state
 
 def read_data_words():
   
@@ -80,14 +96,14 @@ def read_data_words():
     x_train = np.array(list(x_transform_train))
     x_test = np.array(list(x_transform_test))
 
-    x_train, y_train, x_test, y_test = x_train[:500], y_train[:500], x_test[:250], y_test[:250]
+    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:250], y_test[:250]
 
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
     
     return x_train, y_train, x_test, y_test, no_words
   
-def runModel(keep_prob):  
+def runModel(keep_prob, model):  
     startTime = time.time()
     global n_words
     tf.reset_default_graph() 
@@ -102,7 +118,7 @@ def runModel(keep_prob):
     x = tf.placeholder(tf.int64, [None, MAX_DOCUMENT_LENGTH])
     y_ = tf.placeholder(tf.int64)
     
-    inputs, logits = word_cnn_model(x, keep_prob)
+    inputs, logits, _ = word_rnn_model(x, keep_prob, model)
     
     # Class predictions and accuracy
     prediction = tf.nn.softmax(logits)
@@ -110,7 +126,22 @@ def runModel(keep_prob):
     accuracy = tf.reduce_mean(correct_prediction)
     # Optimizer
     entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=tf.one_hot(y_, MAX_LABEL), logits=logits))
-    train_op = tf.train.AdamOptimizer(lr).minimize(entropy)
+#    train_op = tf.train.AdamOptimizer(lr).minimize(entropy)
+    
+    minimizer = tf.train.AdamOptimizer(lr)#minimize(entropy)
+    
+    grads_and_vars = minimizer.compute_gradients(entropy)
+
+
+    # Gradient clipping
+    grad_clipping = tf.constant(2.0, name="grad_clipping")
+    clipped_grads_and_vars = []
+#    print(grads_and_vars)
+    for grad, var in grads_and_vars:
+        clipped_grad = tf.clip_by_value(grad, -grad_clipping, grad_clipping)
+        clipped_grads_and_vars.append((clipped_grad, var))
+     
+    train_op = minimizer.apply_gradients(clipped_grads_and_vars)
       
     N = len(x_train)
     idx = np.arange(N)
@@ -137,7 +168,7 @@ def runModel(keep_prob):
             np.random.shuffle(idx)
             x_train, y_train = x_train[idx], y_train[idx]
             for start, end in zip(range(0, N, batch_size), range(batch_size, N, batch_size)):  
-                train_op.run(feed_dict={x: x_train, y_: y_train})
+                train_op.run(feed_dict={x: x_train[start:end], y_: y_train[start:end]})
 
             loss_ = entropy.eval(feed_dict={x: x_train, y_: y_train})
             train_cost.append(loss_)
@@ -150,21 +181,22 @@ def runModel(keep_prob):
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
     
-    fig1.savefig('./figuresB4/PartB_4_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB4/PartB_4_TestAcc' + str(keep_prob)+'.png')
     if keep_prob != 1: # Define legend once
         fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
         fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
 
+
+    fig1.savefig('./figuresB4/PartB_4_TrainError' + str(keep_prob)+'.png')
+    fig2.savefig('./figuresB4/PartB_4_TestAcc' + str(keep_prob)+'.png')
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds')
     
 def main():
-    print('Running model WITHOUUT dropout')
-    runModel(1)
+    print('Running model WITHOUT dropout')
+    runModel(1, 'lstm')
     print('Running model WITH dropout')
-    runModel(0.5)
+    runModel(0.5, 'lstm')
     
 if __name__ == '__main__':
     main()
