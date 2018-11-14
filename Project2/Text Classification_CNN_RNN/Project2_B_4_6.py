@@ -23,9 +23,9 @@ MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 10
+epochs = 5
 lr = 0.05
-batch_size = 128
+batch_size = 250
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 1000
@@ -96,7 +96,7 @@ def read_data_words():
     x_train = np.array(list(x_transform_train))
     x_test = np.array(list(x_transform_test))
 
-    #x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
+    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
 
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
@@ -235,11 +235,12 @@ def main():
     plt.figure(1)
     plt.plot(range(epochs), train_cost, label='2RNN')
     plt.legend()
-    plt.show()
-    plt.figure().savefig('./figuresB46/PartB_1.png')
     plt.figure(2)
     plt.plot(range(epochs), test_acc, label='2RNN')
     plt.legend()
+    plt.show()
+    plt.figure().savefig('./figuresB46/PartB_1.png')
+    plt.figure(1)
     plt.show()
     plt.figure().savefig('./figuresB46/PartB_2.png')
     

@@ -145,10 +145,11 @@ def runModel(keep_prob):
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
 
-    fig1.savefig('./figuresB3/PartB_3_TrainError' + str(keep_prob)+'.png')
-    fig2.savefig('./figuresB3/PartB_3_TestAcc' + str(keep_prob)+'.png')
     fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
+    
+    fig1.savefig('./figuresB3/PartB_3_TrainError' + str(keep_prob)+'.png')
+    fig2.savefig('./figuresB3/PartB_3_TestAcc' + str(keep_prob)+'.png')
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds.')
