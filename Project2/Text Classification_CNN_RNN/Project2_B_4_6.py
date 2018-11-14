@@ -16,14 +16,12 @@ if not os.path.isdir('figuresB46'):
     print('Creating the figures folder')
     os.makedirs('figuresB46')
 
-#TODO: Epochs, batch size, data size, figures, illustrate prediction
-
 EMBEDDING_SIZE = 20
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 500
+epochs = 400
 lr = 0.01
 batch_size = 128
 
@@ -34,16 +32,13 @@ tf.set_random_seed(seed)
 def word_rnn_model(x, keep_prob, model):
     print(model)
     if model == 'rnn' or model == '2rnn':
-        print('creating cell_fn = basicRNN')
         cell_fn = tf.nn.rnn_cell.BasicRNNCell
-        print('basic rnn cell created')
     elif model == 'gru':
         cell_fn = tf.nn.rnn_cell.GRUCell
     else:
         cell_fn = tf.nn.rnn_cell.LSTMCell
 
     if model == '2rnn':
-        print('creating multiple cells')
         cell1 = tf.nn.rnn_cell.BasicRNNCell(HIDDEN_SIZE)
         cell2 = tf.nn.rnn_cell.BasicRNNCell(HIDDEN_SIZE)
         cells = tf.nn.rnn_cell.MultiRNNCell([cell1, cell2])
@@ -92,7 +87,7 @@ def read_data_words():
     x_train = np.array(list(x_transform_train))
     x_test = np.array(list(x_transform_test))
 
-#    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:500], y_test[:500]
+#    x_train, y_train, x_test, y_test = x_train[:1500], y_train[:1500], x_test[:1000], y_test[:1000]
 
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
@@ -149,6 +144,7 @@ def runModel(keep_prob, model):
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch
             if e%10 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
+                print('Test acuraccy: %g '%(test_acc[e]))
   
     end = time.time()
     diff = round(end - startTime, 3)
@@ -158,35 +154,35 @@ def runModel(keep_prob, model):
 def main():
     tf.logging.set_verbosity(tf.logging.ERROR)
     tf.set_random_seed(1000)
-    
-    plt.figure(1)
-    print('Running GRU model WITHOUT dropout')
-    train_cost, test_acc = runModel(1, 'gru')
-    plt.plot(range(epochs), train_cost, label='GRU')
-    plt.figure(2)
-    plt.plot(range(epochs), test_acc, label='GRU')
-    
+#    
+#    plt.figure(1)
+#    print('Running GRU model WITHOUT dropout')
+#    train_cost, test_acc = runModel(1, 'gru')
+#    plt.plot(range(epochs), train_cost, label='GRU')
+#    plt.figure(2)
+#    plt.plot(range(epochs), test_acc, label='GRU')
+#    
     print('Running RNN model WITHOUT dropout')
     train_cost, test_acc = runModel(1, 'rnn')
     plt.figure(1)
     plt.plot(range(epochs), train_cost, label='RNN')
     plt.figure(2)
     plt.plot(range(epochs), test_acc, label='RNN')
-
-    print('Running LSTM model WITHOUT dropout')
-    train_cost, test_acc = runModel(1, 'lstm')
-    plt.figure(1)
-    plt.plot(range(epochs), train_cost, label='LSTM')
-    plt.figure(2)
-    plt.plot(range(epochs), test_acc, label='LSTM')
-    
-    print('Running 2RNN model WITHOUT dropout')
-    train_cost, test_acc = runModel(1, '2rnn')
-    plt.figure(1)
-    plt.plot(range(epochs), train_cost, label='2RNN')
-    plt.legend()
-    plt.figure(2)
-    plt.plot(range(epochs), test_acc, label='2RNN')
+#
+#    print('Running LSTM model WITHOUT dropout')
+#    train_cost, test_acc = runModel(1, 'lstm')
+#    plt.figure(1)
+#    plt.plot(range(epochs), train_cost, label='LSTM')
+#    plt.figure(2)
+#    plt.plot(range(epochs), test_acc, label='LSTM')
+#    
+#    print('Running 2RNN model WITHOUT dropout')
+#    train_cost, test_acc = runModel(1, '2rnn')
+#    plt.figure(1)
+#    plt.plot(range(epochs), train_cost, label='2RNN')
+#    plt.legend()
+#    plt.figure(2)
+#    plt.plot(range(epochs), test_acc, label='2RNN')
     
     plt.title('Test Acuraccy')
     plt.xlabel('epochs')

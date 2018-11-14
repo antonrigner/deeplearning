@@ -19,9 +19,7 @@ import os
 if not os.path.isdir('figuresA1'):
     print('Creating the figures folder')
     os.makedirs('figuresA1')
-    
-#TODO: check reasonable acurracy: 40-50%
-    
+        
 NUM_CLASSES = 10 # 10 object classes
 IMG_SIZE = 32 # 32x32 pixels
 NUM_CHANNELS = 3 # RGB channels
@@ -107,7 +105,6 @@ def cnn(images):
 
     return logits, conv_1, conv_2, pool_1, pool_2
 
-
 def main():    
     trainX, trainY = load_data('data_batch_1') # load data from file
     print('trainX shape and trainY shape')
@@ -151,7 +148,6 @@ def main():
 
             for start, end in zip(range(0, N, batch_size), range(batch_size, N, batch_size)):
                 train_op.run(feed_dict={x: trainX[start:end,:], y_: trainY[start:end,:]})
-
 
             test_acc.append(accuracy.eval(feed_dict={x: testX, y_: testY})) # save accurracy for every epoch   
             loss_ = sess.run(loss, {x: trainX, y_: trainY})
@@ -236,14 +232,5 @@ def main():
     plt.savefig('./figuresA1/PartA_1_TestAcc.png')
     plt.show()
 
-    #TODO: Add top 5 acc
-    
-#    plt.figure(3)
-#    plt.title('Top 5 Test Accurracy for 4 layer network')
-#    plt.plot(range(epochs), test_accTop5)
-#    plt.xlabel(str(epochs) + ' iterations')
-#    plt.ylabel('Test accuracy')
-#    plt.savefig('./figuresA1/PartA_1_Top5TestAcc.png')
-#    plt.show()
 if __name__ == '__main__':
   main()

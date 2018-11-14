@@ -22,9 +22,6 @@ if not os.path.isdir('figuresA2'):
     print('Creating the figures folder')
     os.makedirs('figuresA2')
     
-#TODO: Grid search suitable parameters, vary seed size. Early stopping, try more iterations, AlexNet...
-# Save figures, cross validation?
-    
 NUM_CLASSES = 10 # 10 object classes
 IMG_SIZE = 32 # 32x32 pixels
 NUM_CHANNELS = 3 # RGB channels
@@ -63,8 +60,6 @@ def weight_variable(shape):
   """weight_variable generates a weight variable of a given shape."""
   initial = tf.truncated_normal(shape, stddev=0.1)
   return tf.Variable(initial)
-
-#TODO: default inititalization tensor flow
 
 def bias_variable(shape):
   """bias_variable generates a bias variable of a given shape."""
@@ -189,10 +184,8 @@ def main():
     ax2.set_xlabel(str(epochs) + ' iterations/epochs')
     ax2.set_ylabel('Test accuracy')
     
-#TODO: Evaluate broad grid -> close in on goal, evaluate again -> report top 5 in plot, rest in grid/matrix in the report
-    # Run models, Grid search (parameter sweep) to evaluate models 
-    c1Fmaps = np.array([5,10])# nbr of filters (feature maps)
-    c2Fmaps = np.array([5,10])
+    c1Fmaps = np.array([5,10,25,50])# nbr of filters (feature maps)
+    c2Fmaps = np.array([5,10,25,50])
     for paramSet in itertools.product(c1Fmaps,c2Fmaps): 
         print(paramSet[0], paramSet[1])
         modelData = runModel(paramSet[0], paramSet[1])
@@ -210,16 +203,15 @@ def main():
         legend.append(stringPair)
         
     fig1.legend(legend)
-#    fig1.savefig('./figuresA2/PartA_2_TrainError.png')
+    fig1.savefig('./figuresA2/PartA_2_TrainError.png')
     fig1.show()
     
     fig2.legend(legend)
-#    fig2.savefig('./figuresA2/PartA_2_TestAcc.png')
+    fig2.savefig('./figuresA2/PartA_2_TestAcc.png')
     fig2.show()
     
     plt.figure(1)
     plt.title('Average time for one epoch for different nbr of feature maps')
-#    plt.xticks(range(25))
     plt.scatter(legend, avgtime)
     plt.xlabel('Sets of feature maps')
     plt.ylabel('Average epoch training time')

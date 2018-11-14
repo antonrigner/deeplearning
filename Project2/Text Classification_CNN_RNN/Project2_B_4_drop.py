@@ -17,8 +17,6 @@ if not os.path.isdir('figuresB4'):
     print('Creating the figures folder')
     os.makedirs('figuresB4')
 
-#TODO: Epochs, batch size, data size, figures, illustrate prediction
-
 EMBEDDING_SIZE = 20
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 N_FILTERS = 10
@@ -28,10 +26,9 @@ POOLING_WINDOW = 4 # 4x4
 POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 
-epochs = 10
+epochs = 100
 lr = 0.01
-batch_size = 250
-keep_prob = 1.0
+batch_size = 128
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10

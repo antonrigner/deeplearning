@@ -16,16 +16,13 @@ if not os.path.isdir('figuresB3'):
     print('Creating the figures folder')
     os.makedirs('figuresB3')
 
-#TODO: Figure folder, correct batch size and full data training, combat overfitting? Remove prints
-
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 HIDDEN_SIZE = 20
 
-epochs = 25
+epochs = 100
 lr = 0.01
 batch_size = 128
-#keep_prob = 0.5
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
@@ -36,8 +33,6 @@ def char_rnn_model(x, keep_prob):
     input_layer = tf.reshape(
             tf.one_hot(x, 256), [-1, MAX_DOCUMENT_LENGTH, 256]) # one hot layer, with 1:s at indices defined by x, depth 256 (nbr of chars)
     input_chars = tf.unstack(input_layer, axis=1) # Char sequence
-#    print(input_chars)
-#    print(input_layer)
     cell = tf.nn.rnn_cell.GRUCell(HIDDEN_SIZE)
     print(cell)
     _, state = tf.nn.static_rnn(cell, input_chars, dtype=tf.float32)
@@ -60,26 +55,16 @@ def read_data_chars():
             x_test.append(row[1])
             y_test.append(int(row[0]))
 
-#    print('Raw')
-#    print('x_train: ', x_train[10:15])
-#    print('y_train: ', y_train[10:15])       
-#    print('Pandas')     
     x_train = pandas.Series(x_train)
     y_train = pandas.Series(y_train)
     x_test = pandas.Series(x_test)
     y_test = pandas.Series(y_test)
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
-#    print('Char processor')
+
     char_processor = tf.contrib.learn.preprocessing.ByteProcessor(MAX_DOCUMENT_LENGTH)
     x_train = np.array(list(char_processor.fit_transform(x_train)))
     x_test = np.array(list(char_processor.transform(x_test)))
     y_train = y_train.values
     y_test = y_test.values
-            
-#    x_train, y_train, x_test, y_test = x_train[:1000], y_train[:1000], x_test[:250], y_test[:250]
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
 
   
@@ -87,9 +72,6 @@ def runModel(keep_prob):
     startTime = time.time()
     tf.reset_default_graph()
     x_train, y_train, x_test, y_test = read_data_chars()
-
-#    print(x_train.shape)
-#    print(y_train.shape)
     print(len(x_train))
     print(len(x_test))
     
@@ -122,11 +104,9 @@ def runModel(keep_prob):
     ax2.set_ylabel('Test accuracy')
   
     with tf.Session() as sess:
-
         sess.run(tf.global_variables_initializer())
         train_cost = [] 
         test_acc = []
-  
   
         for e in range(epochs):
             np.random.shuffle(idx)
@@ -138,16 +118,13 @@ def runModel(keep_prob):
             train_cost.append(loss_)
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch   
 
-
             if e%1 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))
   
     ax1.plot(range(epochs), train_cost)
     ax2.plot(range(epochs), test_acc)
-
     fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
     fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-    
     fig1.savefig('./figuresB3/PartB_3_TrainError' + str(keep_prob)+'.png')
     fig2.savefig('./figuresB3/PartB_3_TestAcc' + str(keep_prob)+'.png')
     end = time.time()

@@ -20,22 +20,16 @@ if not os.path.isdir('figuresA3'):
     print('Creating the figures folder')
     os.makedirs('figuresA3')
     
-#TODO: Grid search suitable parameters, vary seed size. Early stopping, try more iterations, AlexNet...
-# Save figures
-    
 NUM_CLASSES = 10 # 10 object classes
 IMG_SIZE = 32 # 32x32 pixels
 NUM_CHANNELS = 3 # RGB channels
 NUM_FCONNECTED = 300 # Fully connected layer
-#TODO: Change to optimal nbr of features
-opt_num_ftr1 = 5 #################### TO BE FOUND IN Q2!
-opt_num_ftr2 = 5 #################### TO BE FOUND IN Q2!
+opt_num_ftr1 = 10
+opt_num_ftr2 = 50
 learning_rate = 0.001 # alpha
 epochs = 1
 batch_size = 128
 gamma = 0.1 # momentum parameter
-
-# for discussion: https://www.reddit.com/r/MachineLearning/comments/42nnpe/why_do_i_never_see_dropout_applied_in/
 
 seed = 10
 np.random.seed(seed)

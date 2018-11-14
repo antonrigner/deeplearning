@@ -25,10 +25,9 @@ POOLING_WINDOW = 4 # 4x4
 POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 
-epochs = 5
+epochs = 100
 lr = 0.01
 batch_size = 128
-#keep_prob = 0.5
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
@@ -88,36 +87,23 @@ def read_data_chars():
             x_test.append(row[1])
             y_test.append(int(row[0]))
 
-#    print('Raw')
-#    print('x_train: ', x_train[10:15])
-#    print('y_train: ', y_train[10:15])       
-#    print('Pandas')     
     x_train = pandas.Series(x_train)
     y_train = pandas.Series(y_train)
     x_test = pandas.Series(x_test)
     y_test = pandas.Series(y_test)
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
-#    print('Char processor')
+
     char_processor = tf.contrib.learn.preprocessing.ByteProcessor(MAX_DOCUMENT_LENGTH)
     x_train = np.array(list(char_processor.fit_transform(x_train)))
     x_test = np.array(list(char_processor.transform(x_test)))
     y_train = y_train.values
     y_test = y_test.values
-            
-#    x_train, y_train, x_test, y_test = x_train[:250], y_train[:250], x_test[:250], y_test[:250]
-#    print('x_train: ', x_train[:5])
-#    print('y_train: ', y_train[:5])
     return x_train, y_train, x_test, y_test
 
-  
 def runModel(keep_prob):  
     startTime = time.time()
     tf.reset_default_graph() 
     x_train, y_train, x_test, y_test = read_data_chars()
 
-#    print(x_train.shape)
-#    print(y_train.shape)
     print(len(x_train))
     print(len(x_test))
     
@@ -154,8 +140,6 @@ def runModel(keep_prob):
         sess.run(tf.global_variables_initializer())
         train_cost = [] 
         test_acc = []
-  
-  
         for e in range(epochs):
             np.random.shuffle(idx)
             x_train, y_train = x_train[idx], y_train[idx]
@@ -165,7 +149,6 @@ def runModel(keep_prob):
             loss_ = entropy.eval(feed_dict={x: x_train, y_: y_train})
             train_cost.append(loss_)
             test_acc.append(accuracy.eval(feed_dict={x: x_test, y_: y_test})) # save accurracy for every epoch   
-
 
             if e%10 == 0:
                 print('iter: %d, entropy: %g'%(e, train_cost[e]))

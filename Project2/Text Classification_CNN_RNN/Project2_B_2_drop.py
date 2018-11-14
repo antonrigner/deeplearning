@@ -16,8 +16,6 @@ if not os.path.isdir('figuresB2'):
     print('Creating the figures folder')
     os.makedirs('figuresB2')
 
-#TODO: Epochs, batch size, data size, figures, illustrate prediction
-
 EMBEDDING_SIZE = 20
 MAX_DOCUMENT_LENGTH = 100 # Maximum length of words / characters for inputs
 N_FILTERS = 10
@@ -27,10 +25,9 @@ POOLING_WINDOW = 4 # 4x4
 POOLING_STRIDE = 2 # 2x2
 MAX_LABEL = 15 # 15 Wikipedia categories in the dataset
 
-epochs = 10
+epochs = 100
 lr = 0.01
-batch_size = 250
-keep_prob = 1.0
+batch_size = 128
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 seed = 10
@@ -111,7 +108,6 @@ def read_data_words():
     x_test = np.array(list(x_transform_test))
 
 #    x_train, y_train, x_test, y_test = x_train[:500], y_train[:500], x_test[:250], y_test[:250]
-
     no_words = len(vocab_processor.vocabulary_)
     print('Total words: %d' % no_words)
     
@@ -122,11 +118,6 @@ def runModel(keep_prob):
     global n_words
     tf.reset_default_graph() 
     x_train, y_train, x_test, y_test, n_words= read_data_words()
-
-#    print(x_train.shape)
-#    print(y_train.shape)
-#    print(len(x_train))
-#    print(len(x_test))
     
     # Create the model
     x = tf.placeholder(tf.int64, [None, MAX_DOCUMENT_LENGTH])
@@ -183,10 +174,8 @@ def runModel(keep_prob):
     if keep_prob != 1: # Define legend once
         fig1.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
         fig2.legend(['No dropout', 'Dropout with keep prob ' + str(keep_prob)])
-
     fig1.savefig('./figuresB2/PartB_2_TrainError' + str(keep_prob)+'.png')
     fig2.savefig('./figuresB2/PartB_2_TestAcc' + str(keep_prob)+'.png')
-
     end = time.time()
     diff = round(end - startTime, 3)
     print('Total runtime: ', diff, 'seconds')
