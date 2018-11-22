@@ -6,7 +6,7 @@ Created on Thu Nov  1 17:23:32 2018
 """
 
 #
-# Project 2, Part A, Question 2
+# CNN object classification, CIFAR10 dataset, grid search for optimal feature maps
 #
 
 #import math

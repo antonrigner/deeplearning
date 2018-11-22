@@ -6,7 +6,7 @@ Created on Sat Nov  3 12:28:15 2018
 """
 
 #
-# Project 2, Part A, Question 3
+# CNN object classification, CIFAR10 dataset, try different optimizers
 #
 
 #import math

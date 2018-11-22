@@ -6,10 +6,9 @@ Created on Wed Oct 24 11:47:19 2018
 """
 
 #
-# Project 2, Part A, Question 1
+# CNN object classification, CIFAR10 dataset
 #
 
-#import math
 import tensorflow as tf
 import numpy as np
 import pylab as plt
@@ -114,8 +113,8 @@ def main():
     print('testX shape and testY shape')
     print(testX.shape, testY.shape)
 
-    trainX = (trainX - np.min(trainX, axis = 0))/np.max(trainX, axis = 0) # pixel scaling 0 to 1
-    testX = (testX - np.min(testX, axis = 0))/np.max(testX, axis = 0) # pixel scaling 0 to 1
+    trainX = (trainX - np.min(trainX, axis = 0))/np.max(trainX, axis = 0) # Pixel normalization
+    testX = (testX - np.min(testX, axis = 0))/np.max(testX, axis = 0)
 
     # Create the model
     x = tf.placeholder(tf.float32, [None, IMG_SIZE*IMG_SIZE*NUM_CHANNELS]) # 32x32x3, input image
